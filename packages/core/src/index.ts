@@ -1,5 +1,5 @@
-/** Popover position relative to the target. */
-export type Placement = "top" | "bottom" | "left" | "right" | "auto";
+/** Popover position relative to the target. Logical sides, so right-to-left layouts mirror. */
+export type Placement = "top" | "bottom" | "start" | "end" | "auto";
 
 export interface Step<C = unknown> {
   id: string;

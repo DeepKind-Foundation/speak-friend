@@ -46,6 +46,12 @@ tours.subscribe((state) => render(state)); // current step, position, total
 - Raising a tour's `version` offers it again to users who finished an older one.
 - Steps can be omitted per user (`skipIf`) or when their target is not on the page (`isAvailable`).
 
+## Languages
+
+The library contains no user-facing text. Titles, bodies, button labels and the step counter all come from the app, in any
+language; the counter is built from `snapshot.index` and `snapshot.total`. Placement uses logical sides (`start`,
+`end`) so right-to-left layouts mirror, and layouts must tolerate text that is much longer than English.
+
 ## Accessibility
 
 The UI packages follow these rules:

@@ -4,8 +4,6 @@ Accessible page tours for React: a small headless engine, role-aware and resumab
 
 Built with a focus on accessibility: keyboard support, screen readers, reduced motion.
 
-The name is the password to the Doors of Durin: speak, friend, and enter.
-
 Status: early. The engine and the React guide are working.
 
 ## Packages
@@ -76,7 +74,7 @@ pnpm typecheck
 
 ## Demo
 
-`apps/demo` is the demo site. It runs the workspace packages, so build them first.
+The demo site is at https://deepkind-foundation.github.io/speak-friend/. Its source is `apps/demo`, which runs the workspace packages, so build them first to run it locally.
 
 ```bash
 pnpm build

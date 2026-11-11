@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { findTarget } from "./wait-for-target";
+import { findTarget } from "./wait-for-target.js";
 
 interface Box {
   top: number;

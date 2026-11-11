@@ -1,8 +1,8 @@
 import { createElement, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Ring } from "./ring";
-import { useTourState, useTours } from "./provider";
-import { findTarget } from "./wait-for-target";
+import { Ring } from "./ring.js";
+import { useTourState, useTours } from "./provider.js";
+import { findTarget } from "./wait-for-target.js";
 
 /** Every string the guide shows. The library has no text of its own. */
 export interface GuideLabels {

@@ -1,6 +1,6 @@
-export { TourProvider, useTours, useTourState } from "./provider";
-export type { TourProviderProps } from "./provider";
-export { TourGuide } from "./guide";
-export type { GuideLabels, TourGuideProps } from "./guide";
-export { Ring } from "./ring";
-export { waitForTarget } from "./wait-for-target";
+export { TourProvider, useTours, useTourState } from "./provider.js";
+export type { TourProviderProps } from "./provider.js";
+export { TourGuide } from "./guide.js";
+export type { GuideLabels, TourGuideProps } from "./guide.js";
+export { Ring } from "./ring.js";
+export { waitForTarget } from "./wait-for-target.js";

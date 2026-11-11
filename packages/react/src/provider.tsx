@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
 import { createTours, type Options, type Snapshot, type Tours } from "dont-panic";
-import { waitForTarget } from "./wait-for-target";
+import { waitForTarget } from "./wait-for-target.js";
 
 const TourContext = createContext<Tours<never> | null>(null);
 

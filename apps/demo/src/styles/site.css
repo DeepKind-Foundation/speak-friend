@@ -1,0 +1,225 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+a {
+  color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--silver);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.page {
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-block: var(--space-6) var(--space-16);
+  padding-inline: max(var(--space-4), env(safe-area-inset-left, 0px))
+    max(var(--space-4), env(safe-area-inset-right, 0px));
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-6);
+  padding-block-end: var(--space-4);
+  border-block-end: 1px solid var(--rule);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.mini-door {
+  position: relative;
+  width: 20px;
+  height: 28px;
+  border: 1px solid var(--silver);
+  border-radius: 50% 50% 2px 2px / 32% 32% 2px 2px;
+}
+
+.mini-door::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 32%;
+  width: 8px;
+  height: 8px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--silver);
+}
+
+.site-header nav {
+  display: flex;
+  gap: var(--space-6);
+  font: 500 0.8125rem/1 var(--font-mono);
+  color: var(--dim);
+}
+
+.site-header nav a {
+  text-decoration: none;
+}
+
+.site-header nav a[aria-current="page"] {
+  color: var(--ink);
+  padding-block-end: var(--space-1);
+  border-block-end: 1px solid var(--silver);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: clamp(var(--space-6), 6vw, 72px);
+  align-items: center;
+  padding-block: clamp(var(--space-8), 5vw, var(--space-16));
+}
+
+.hero-copy {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.hero-copy p {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.eyebrow {
+  font: 500 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--silver);
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.25rem, 6vw, 4.25rem);
+  line-height: 1;
+  text-wrap: balance;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.install {
+  padding: var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  font: 400 0.8125rem/1 var(--font-mono);
+  color: var(--dim);
+}
+
+.tk-t {
+  color: var(--tk-t);
+}
+.tk-a {
+  color: var(--tk-a);
+}
+.tk-s {
+  color: var(--tk-s);
+}
+
+.door-figure {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  margin: 0;
+}
+
+.door {
+  width: min(100%, 280px);
+  aspect-ratio: 300 / 410;
+  background: var(--silver);
+  -webkit-mask: url("../assets/door.svg") center / contain no-repeat;
+  mask: url("../assets/door.svg") center / contain no-repeat;
+}
+
+.door-caption {
+  font: italic 500 1.0625rem/1.2 var(--font-display);
+  color: var(--dim);
+}
+
+.ledger {
+  display: grid;
+  margin: 0;
+  border-block-start: 1px solid var(--rule);
+}
+
+.ledger-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 4fr;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-3);
+  border-block-end: 1px solid var(--rule);
+}
+
+.ledger dt {
+  font: 500 0.8125rem/1.5 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--silver);
+}
+
+.ledger dd {
+  margin: 0;
+  max-width: 52ch;
+}
+
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .ledger-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}
+
+.button {
+  min-height: 40px;
+  padding: var(--space-1) var(--space-6);
+  font: 600 1rem/1 var(--font-body);
+  color: var(--action-ink);
+  background: var(--action);
+  border: 2px solid var(--action-edge);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media (pointer: coarse) {
+  .button {
+    min-height: 44px;
+  }
+}

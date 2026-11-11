@@ -74,6 +74,15 @@ pnpm typecheck
 
 `pnpm install` registers [lefthook](https://github.com/evilmartians/lefthook) git hooks. On commit they format and lint the staged files and run the type check; on push they run the tests. CI runs the same commit hooks on every file and fails if they change anything.
 
+## Demo
+
+`apps/demo` is the demo site. It runs the workspace packages, so build them first.
+
+```bash
+pnpm build
+pnpm --filter speak-friend-demo dev
+```
+
 ## Licence
 
 MIT

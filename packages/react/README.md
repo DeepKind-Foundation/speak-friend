@@ -38,6 +38,8 @@ await tours.start("welcome");
 - The guide docks at the bottom, on the `end` side by default (`position="start"` mirrors it). On narrow screens it
   becomes a bottom sheet.
 - A ring marks the target. The page is not dimmed and stays usable.
+- The guide is non-modal: it is a `role="dialog"` without `aria-modal`, nothing traps focus, and Tab leaves it after its last button and continues into the page.
+- `theme` overrides the system setting in both directions: `theme="dark"` stays dark on a light system and `theme="light"` stays light on a dark one.
 - Focus moves to the step title on every step. `announce="live"` keeps focus and announces the step instead.
 - Escape closes the tour and returns focus to where it was. Starting again resumes from the same step. If that element is no longer on the page, focus goes to `fallbackFocus`, then the first `h1`, then `main`.
 - A step whose target is not on the page is skipped and leaves the count.
@@ -71,5 +73,15 @@ await tours.start("welcome");
 `speak-friend-react/styles.css` defines the layout and a neutral light and dark theme. Override the custom properties to
 match your app: `--sf-surface`, `--sf-ink`, `--sf-line`, `--sf-accent`, `--sf-accent-ink`, `--sf-primary`,
 `--sf-primary-ink`, `--sf-primary-edge`, `--sf-done`, `--sf-halo`, `--sf-width`, `--sf-gap`, `--sf-z`.
+
+The colour properties (`--sf-surface` to `--sf-halo`) are defined on `.sf-guide` and `.sf-ring` themselves, so override them with those selectors, after the stylesheet. Setting them on `:root` or another ancestor has no effect. `--sf-width`, `--sf-gap` and `--sf-z` are only read, so they can be set anywhere.
+
+```css
+.sf-guide,
+.sf-ring {
+  --sf-accent: oklch(48% 0.14 45);
+  --sf-primary: oklch(86% 0.14 75);
+}
+```
 
 The ring and the guide keep their borders in Windows high contrast mode, and animation is off with reduced motion.

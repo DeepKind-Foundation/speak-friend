@@ -162,6 +162,18 @@ describe("the guide", () => {
     expect(screen.getByRole("dialog").getAttribute("data-position")).toBe("end");
   });
 
+  it("follows the system theme unless one is forced", async () => {
+    const view = setup();
+    await begin();
+    expect(screen.getByRole("dialog").hasAttribute("data-theme")).toBe(false);
+    expect(document.querySelector(".sf-ring")?.hasAttribute("data-theme")).toBe(false);
+    view.unmount();
+    setup({ theme: "dark" });
+    await begin();
+    expect(screen.getByRole("dialog").getAttribute("data-theme")).toBe("dark");
+    expect(document.querySelector(".sf-ring")?.getAttribute("data-theme")).toBe("dark");
+  });
+
   it("uses the chosen heading level", async () => {
     setup({ headingLevel: 3 });
     await begin();

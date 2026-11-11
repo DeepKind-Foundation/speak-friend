@@ -19,6 +19,8 @@ export interface TourGuideProps {
   labels: GuideLabels;
   /** Horizontal side of the dock. Logical, so it mirrors in right-to-left layouts. Default `end`. */
   position?: "start" | "end";
+  /** `light` or `dark` forces a theme. By default the guide follows the operating system. */
+  theme?: "light" | "dark";
   /** Heading level of the step title. Default 2. */
   headingLevel?: 2 | 3 | 4 | 5 | 6;
   /** `focus` moves focus to the step title; `live` keeps focus and announces the step. Default `focus`. */
@@ -37,6 +39,7 @@ const reducedMotion = (): boolean =>
 export function TourGuide({
   labels,
   position = "end",
+  theme,
   headingLevel = 2,
   announce = "focus",
   closeOnEscape = true,
@@ -111,7 +114,7 @@ export function TourGuide({
 
   return (
     <>
-      <Ring key={step.id} target={step.target} />
+      <Ring key={step.id} target={step.target} theme={theme} />
       {createPortal(
         <section
           ref={guideRef}
@@ -119,6 +122,7 @@ export function TourGuide({
           aria-labelledby={id}
           className={className ? `sf-guide ${className}` : "sf-guide"}
           data-position={position}
+          data-theme={theme}
         >
           <div className="sf-band">
             <span className="sf-count">{counter}</span>

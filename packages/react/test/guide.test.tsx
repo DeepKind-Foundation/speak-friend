@@ -350,3 +350,58 @@ function OddStarter() {
     </button>
   );
 }
+
+function VanishingStarter({ gone }: { gone: boolean }) {
+  const t = useTours<Ctx>();
+  return gone ? null : (
+    <button type="button" onClick={() => void t.start("welcome")}>
+      begin
+    </button>
+  );
+}
+
+describe("focus when the opener is gone", () => {
+  const start = async (props: Partial<React.ComponentProps<typeof TourGuide>> = {}, withHeading = true) => {
+    const store = memoryStore();
+    const tree = (gone: boolean) => (
+      <TourProvider tours={tours} store={store} context={context} targetTimeout={30}>
+        <main>
+          {withHeading && <h1>Page title</h1>}
+          <VanishingStarter gone={gone} />
+          <div data-tour="card">card</div>
+          <div data-tour="nav">nav</div>
+          <div data-tour="list">list</div>
+        </main>
+        <button type="button">fallback</button>
+        <TourGuide labels={labels} {...props} />
+      </TourProvider>
+    );
+    const { rerender } = render(tree(false));
+    const opener = screen.getByText("begin");
+    opener.focus();
+    await act(async () => {
+      fireEvent.click(opener);
+    });
+    await screen.findByRole("dialog");
+    rerender(tree(true));
+    await act(async () => {
+      fireEvent.keyDown(document, { key: "Escape" });
+    });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  };
+
+  it("moves focus to the first level 1 heading", async () => {
+    await start();
+    expect(document.activeElement?.textContent).toBe("Page title");
+  });
+
+  it("falls back to main when the page has no level 1 heading", async () => {
+    await start({}, false);
+    expect(document.activeElement?.tagName).toBe("MAIN");
+  });
+
+  it("uses the element returned by fallbackFocus", async () => {
+    await start({ fallbackFocus: () => screen.getByText("fallback") });
+    expect(document.activeElement?.textContent).toBe("fallback");
+  });
+});

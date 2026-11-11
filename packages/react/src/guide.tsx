@@ -1,5 +1,6 @@
 import { createElement, useEffect, useId, useLayoutEffect, useRef, useSyncExternalStore, type JSX } from "react";
 import { createPortal } from "react-dom";
+import { restoreFocus } from "./focus.js";
 import { Ring } from "./ring.js";
 import { useRun, useTourState, useTours } from "./provider.js";
 import { findTarget } from "./wait-for-target.js";
@@ -27,6 +28,11 @@ export interface TourGuideProps {
   announce?: "focus" | "live";
   /** Close the tour on Escape. Default true. */
   closeOnEscape?: boolean;
+  /**
+   * Where focus goes when the tour ends and the element that started it is no longer on the page. Default: the first
+   * level 1 heading, then `main`.
+   */
+  fallbackFocus?: () => HTMLElement | null;
   className?: string;
 }
 
@@ -43,6 +49,7 @@ export function TourGuide({
   headingLevel = 2,
   announce = "focus",
   closeOnEscape = true,
+  fallbackFocus,
   className,
 }: TourGuideProps): JSX.Element | null {
   const tours = useTours();
@@ -52,6 +59,7 @@ export function TourGuide({
   const titleRef = useRef<HTMLElement>(null);
   const guideRef = useRef<HTMLElement>(null);
   const opener = useRef<Element | null>(null);
+  const fallback = useRef(fallbackFocus);
   // False on the server and during hydration, true afterwards: the guide only exists in the browser.
   const mounted = useSyncExternalStore(
     noSubscription,
@@ -61,13 +69,16 @@ export function TourGuide({
   const running = state.status === "running" && state.step !== null;
   const stepId = state.step?.id;
 
+  useLayoutEffect(() => {
+    fallback.current = fallbackFocus;
+  }, [fallbackFocus]);
+
   // Remember where focus was when the tour started and give it back when the tour ends.
   useLayoutEffect(() => {
     if (!running) return;
     opener.current = document.activeElement;
     return () => {
-      const el = opener.current;
-      if (el instanceof HTMLElement && el.isConnected) el.focus({ preventScroll: true });
+      restoreFocus(opener.current, fallback.current);
       opener.current = null;
     };
   }, [running]);

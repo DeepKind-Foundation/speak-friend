@@ -39,7 +39,7 @@ await tours.start("welcome");
   becomes a bottom sheet.
 - A ring marks the target. The page is not dimmed and stays usable.
 - Focus moves to the step title on every step. `announce="live"` keeps focus and announces the step instead.
-- Escape closes the tour and returns focus to where it was. Starting again resumes from the same step.
+- Escape closes the tour and returns focus to where it was. Starting again resumes from the same step. If that element is no longer on the page, focus goes to `fallbackFocus`, then the first `h1`, then `main`.
 - A step whose target is not on the page is skipped and leaves the count.
 - While the guide is open, `scroll-padding-bottom` keeps focused elements clear of it.
 - Name a target once per page. A name used on two pages can match the old page's element while the route changes, so a step can be shown before the new page has rendered. The ring looks its target up again on every layout change, so it follows the new element when one with that name appears.
@@ -55,15 +55,16 @@ await tours.start("welcome");
 
 ## Props of `TourGuide`
 
-| Prop            | Default  | Description                                                 |
-| --------------- | -------- | ----------------------------------------------------------- |
-| `labels`        | required | Every string: `counter`, `back`, `next`, `finish`, `close`. |
-| `position`      | `end`    | `start` or `end`.                                           |
-| `theme`         |          | `light` or `dark` forces a theme. Default: follows the OS.  |
-| `headingLevel`  | `2`      | Heading level of the step title.                            |
-| `announce`      | `focus`  | `focus` or `live`.                                          |
-| `closeOnEscape` | `true`   |                                                             |
-| `className`     |          | Added to the guide.                                         |
+| Prop            | Default  | Description                                                                                                        |
+| --------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `labels`        | required | Every string: `counter`, `back`, `next`, `finish`, `close`.                                                        |
+| `position`      | `end`    | `start` or `end`.                                                                                                  |
+| `theme`         |          | `light` or `dark` forces a theme. Default: follows the OS.                                                         |
+| `headingLevel`  | `2`      | Heading level of the step title.                                                                                   |
+| `announce`      | `focus`  | `focus` or `live`.                                                                                                 |
+| `closeOnEscape` | `true`   |                                                                                                                    |
+| `fallbackFocus` |          | Where focus goes when the tour ends and the element that started it is gone. Default: the first `h1`, then `main`. |
+| `className`     |          | Added to the guide.                                                                                                |
 
 ## Styling
 

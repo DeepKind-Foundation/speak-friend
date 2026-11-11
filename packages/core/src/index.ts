@@ -102,6 +102,18 @@ export function createTours<C>(options: Options<C>): Tours<C> {
   let current: Snapshot<C> = { ...IDLE };
   let places: Place<C>[] = [];
   let tour: Tour<C> | null = null;
+  // Bumped whenever a run is replaced or closed, so work still awaiting the store, the router or the page is dropped.
+  let epoch = 0;
+  let queue: Promise<unknown> = Promise.resolve();
+  let shown = false;
+
+  /** Runs one step change after the ones before it, unless the tour was closed or restarted in the meantime. */
+  const enqueue = (fn: (run: number) => Promise<void>): Promise<void> => {
+    const run = epoch;
+    const result = queue.then(() => (run === epoch ? fn(run) : undefined));
+    queue = result.catch(() => undefined);
+    return result;
+  };
 
   const publish = (next: Snapshot<C>) => {
     current = next;
@@ -125,14 +137,18 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     store.set(t.id, { version: t.version, chapter: 0, step: 0, dismissals: old?.dismissals ?? 0, ...patch });
 
   /** Shows the first available step from `from` in `direction`, or finishes the tour. */
-  async function show(from: number, direction: 1 | -1) {
-    if (!tour) return;
+  async function show(from: number, direction: 1 | -1, run: number): Promise<void> {
+    if (!tour || run !== epoch) return;
     let i = from;
     while (i >= 0 && i < places.length) {
       const place = places[i]!;
       const previous = current.chapter;
       if (previous?.id !== place.chapter.id) await navigate?.(place.chapter.route);
-      if (!isAvailable || (await isAvailable(place.step))) {
+      if (run !== epoch) return;
+      const available = !isAvailable || (await isAvailable(place.step));
+      if (run !== epoch) return;
+      if (available) {
+        shown = true;
         publish({
           status: "running",
           tourId: tour.id,
@@ -152,13 +168,20 @@ export function createTours<C>(options: Options<C>): Tours<C> {
       places.splice(i, 1);
       if (direction === -1) i -= 1;
     }
-    if (direction === 1) await finish();
-    else if (places.length) await show(0, 1);
+    if (direction === 1) await finish(run);
+    else if (places.length) await show(0, 1, run);
   }
 
-  async function finish() {
-    if (!tour) return;
+  async function finish(run: number): Promise<void> {
+    if (!tour || run !== epoch) return;
     const t = tour;
+    // Nothing was ever on the page: end quietly instead of recording a tour nobody saw as completed.
+    if (!shown) {
+      tour = null;
+      places = [];
+      publish({ ...IDLE });
+      return;
+    }
     await save(
       t,
       { status: "completed", chapter: places.at(-1)?.chapterIndex ?? 0, step: places.at(-1)?.stepIndex ?? 0 },
@@ -169,9 +192,12 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     publish({ ...IDLE });
   }
 
-  async function begin(id: string, resume: boolean) {
+  async function begin(id: string, resume: boolean): Promise<void> {
     const t = find(id);
+    const run = ++epoch;
+    shown = false;
     const progress = await store.get(id);
+    if (run !== epoch) return;
     tour = t;
     places = placesOf(t);
     current = { ...IDLE };
@@ -183,7 +209,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
       );
       from = saved === -1 ? 0 : saved;
     }
-    await show(from, 1);
+    await show(from, 1, run);
   }
 
   return {
@@ -201,17 +227,16 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     },
     start: (id) => begin(id, true),
     restart: (id) => begin(id, false),
-    next: async () => {
-      if (current.status === "running") await show(current.index + 1, 1);
-    },
-    back: async () => {
-      if (current.status === "running" && current.index > 0) await show(current.index - 1, -1);
-    },
+    next: () => enqueue(async (run) => (current.status === "running" ? show(current.index + 1, 1, run) : undefined)),
+    back: () =>
+      enqueue(async (run) =>
+        current.status === "running" && current.index > 0 ? show(current.index - 1, -1, run) : undefined,
+      ),
     async close() {
-      if (current.status !== "running") return;
+      epoch++;
       tour = null;
       places = [];
-      publish({ ...IDLE });
+      if (current.status === "running") publish({ ...IDLE });
     },
     async dismiss(id) {
       const t = find(id);

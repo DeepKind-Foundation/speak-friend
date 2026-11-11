@@ -178,3 +178,63 @@ describe("listening", () => {
     expect(tours.snapshot().step?.id).toBe("list");
   });
 });
+
+describe("changes that overlap", () => {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  it("closing while the next step is still being checked does not fail and leaves the tour closed", async () => {
+    let slow = false;
+    const { tours } = setup(["member"], {
+      isAvailable: async () => {
+        if (slow) await sleep(20);
+        return true;
+      },
+    });
+    await tours.start("welcome");
+    slow = true;
+    const pending = tours.next();
+    await tours.close();
+    await expect(pending).resolves.toBeUndefined();
+    expect(tours.snapshot().status).toBe("idle");
+  });
+
+  it("two quick next calls move two steps, in order", async () => {
+    const { tours } = setup(["member"], { isAvailable: async () => (await sleep(5), true) });
+    await tours.start("welcome");
+    await Promise.all([tours.next(), tours.next()]);
+    expect(tours.snapshot()).toMatchObject({ step: { id: "submit" }, index: 2 });
+  });
+
+  it("starting again drops the change that was still waiting", async () => {
+    let slow = false;
+    const { tours } = setup(["member"], {
+      isAvailable: async () => {
+        if (slow) await sleep(20);
+        return true;
+      },
+    });
+    await tours.start("welcome");
+    slow = true;
+    const pending = tours.next();
+    slow = false;
+    await tours.restart("welcome");
+    await pending;
+    expect(tours.snapshot()).toMatchObject({ index: 0, step: { id: "card" } });
+  });
+
+  it("closing while the tour is still loading keeps it from opening", async () => {
+    const slowStore = { ...memoryStore(), get: async () => (await sleep(20), null) };
+    const tours = createTours<Ctx>({ tours: [welcome], store: slowStore, context: { roles: ["member"] } });
+    const pending = tours.start("welcome");
+    await tours.close();
+    await pending;
+    expect(tours.snapshot().status).toBe("idle");
+  });
+
+  it("does not record a tour as completed when none of its steps was on the page", async () => {
+    const { tours, store } = setup(["member"], { isAvailable: async () => false });
+    await tours.start("welcome");
+    expect(tours.snapshot().status).toBe("idle");
+    expect(await store.get("welcome")).toBeNull();
+  });
+});

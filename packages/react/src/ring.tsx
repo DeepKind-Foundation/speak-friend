@@ -11,16 +11,28 @@ interface Box {
 
 /**
  * Follows the target's box through scrolling, resizing and layout changes. Content added or resized above the target
- * moves it without resizing it, so the document and the DOM are watched as well as the target itself.
+ * moves it without resizing it, so the document and the DOM are watched as well as the target itself. The element is
+ * looked up again on every measure, so a target that is replaced or removed is followed or dropped, and the ring is
+ * never left on a detached element.
  */
 function useBox(target: string): Box | null {
   const [box, setBox] = useState<Box | null>(null);
   useEffect(() => {
-    const el = findTarget(target);
-    if (!el) return;
     let frame = 0;
+    let observed: HTMLElement | null = null;
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => schedule());
     const measure = (): void => {
       frame = 0;
+      const el = findTarget(target);
+      if (el !== observed) {
+        if (observed) observer?.unobserve(observed);
+        if (el) observer?.observe(el);
+        observed = el;
+      }
+      if (!el) {
+        setBox(null);
+        return;
+      }
       const r = el.getBoundingClientRect();
       setBox((p) =>
         p && p.top === r.top && p.left === r.left && p.width === r.width && p.height === r.height
@@ -34,8 +46,6 @@ function useBox(target: string): Box | null {
     measure();
     window.addEventListener("scroll", schedule, { capture: true, passive: true });
     window.addEventListener("resize", schedule);
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
-    observer?.observe(el);
     observer?.observe(document.body);
     const mutations = new MutationObserver(schedule);
     mutations.observe(document.body, { childList: true, subtree: true, attributes: true });

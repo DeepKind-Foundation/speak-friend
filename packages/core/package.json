@@ -29,7 +29,8 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "tour",

@@ -1,0 +1,21 @@
+# The same checks run locally on commit and in CI (job "pre-commit", which fails if they change any file).
+pre-commit:
+  parallel: false
+  jobs:
+    - name: prettier
+      glob: "*.{ts,tsx,js,mjs,json,css,md,yml,yaml}"
+      run: pnpm exec prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+    - name: eslint
+      glob: "*.{ts,tsx,js,mjs}"
+      run: pnpm exec eslint --fix --max-warnings 0 --no-warn-ignored {staged_files}
+      stage_fixed: true
+    - name: typecheck
+      run: pnpm typecheck
+    - name: gitleaks
+      run: command -v gitleaks >/dev/null && gitleaks protect --staged --redact || echo "gitleaks not installed locally; CI runs it"
+
+pre-push:
+  jobs:
+    - name: test
+      run: pnpm test

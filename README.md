@@ -74,7 +74,7 @@ pnpm typecheck
 
 ## Demo
 
-The demo site is at https://deepkind-foundation.github.io/speak-friend/. Its source is `apps/demo`, which runs the workspace packages, so build them first to run it locally.
+The demo site is at https://speak-friend.dont-mind-ai.com/. Its source is `apps/demo`, which runs the workspace packages, so build them first to run it locally.
 
 ```bash
 pnpm build

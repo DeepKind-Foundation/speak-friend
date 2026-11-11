@@ -45,6 +45,8 @@ tours.subscribe((state) => render(state)); // current step, position, total
 - A tour dismissed twice (configurable) is no longer offered.
 - Raising a tour's `version` offers it again to users who finished an older one.
 - Steps can be omitted per user (`skipIf`) or when their target is not on the page (`isAvailable`).
+- A step can set its own `timeout` in milliseconds, to wait less for a target that may be absent.
+- `progress(tourId)` returns what the engine last read from or wrote to the store, so a button can say "Continue" without waiting for the store. It is `null` until `offered()`, `start()` or `dismiss()` has run, and for progress of an older version of the tour. It does not follow changes made elsewhere, such as in another tab. `subscribeProgress` tells you when it changes; in React use `useTourProgress`.
 
 ## Languages
 

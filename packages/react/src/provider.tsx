@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useSyncExternalStore, type JSX, type ReactNode } from "react";
-import { createTours, type Options, type Snapshot, type Tours } from "speak-friend";
+import { createTours, type Options, type Progress, type Snapshot, type Tours } from "speak-friend";
 import { waitForTarget } from "./wait-for-target.js";
 
 interface TourContextValue {
@@ -13,7 +13,7 @@ const logError = (error: unknown): void => console.error(error);
 
 export interface TourProviderProps<C> extends Omit<Options<C>, "isAvailable"> {
   children: ReactNode;
-  /** How long to wait for a step's target to appear before skipping the step, in ms. Default 1500. */
+  /** How long to wait for a step's target to appear before skipping the step, in ms. A step's own `timeout` wins. Default 1500. */
   targetTimeout?: number;
   /** Called when a step change fails, for example when the progress store rejects. Default `console.error`. */
   onError?: (error: unknown) => void;
@@ -35,7 +35,7 @@ export function TourProvider<C>({
         context,
         navigate,
         maxDismissals,
-        isAvailable: (step) => waitForTarget(step.target, targetTimeout),
+        isAvailable: (step) => waitForTarget(step.target, step.timeout ?? targetTimeout),
       }) as unknown as Tours<never>,
       onError,
     }),
@@ -65,4 +65,17 @@ export function useRun(): (action: Promise<void>) => void {
 export function useTourState<C = unknown>(): Snapshot<C> {
   const t = useTours<C>();
   return useSyncExternalStore((notify) => t.subscribe(notify), t.snapshot, t.snapshot);
+}
+
+/**
+ * What the engine last read from or wrote to the store for a tour, or null. Re-renders when it changes. Call
+ * `offered()` once to load it, for example when the page opens.
+ */
+export function useTourProgress(tourId: string): Progress | null {
+  const t = useTours();
+  return useSyncExternalStore(
+    (notify) => t.subscribeProgress(notify),
+    () => t.progress(tourId),
+    () => null,
+  );
 }

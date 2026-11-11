@@ -72,6 +72,8 @@ pnpm test
 pnpm typecheck
 ```
 
+`pnpm install` registers [lefthook](https://github.com/evilmartians/lefthook) git hooks. On commit they format and lint the staged files and run the type check; on push they run the tests. CI runs the same commit hooks on every file and fails if they change anything.
+
 ## Licence
 
 MIT

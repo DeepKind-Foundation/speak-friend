@@ -33,7 +33,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "smoke": "node scripts/smoke.mjs",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm build",
+    "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {
     "react": ">=18",

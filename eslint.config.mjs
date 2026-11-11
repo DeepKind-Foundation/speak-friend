@@ -9,7 +9,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["packages/react/**/*.{ts,tsx}"],
+    files: ["packages/react/**/*.{ts,tsx}", "apps/demo/**/*.{ts,tsx}"],
     plugins: { "react-hooks": reactHooks, "jsx-a11y": jsxA11y },
     languageOptions: { globals: globals.browser },
     rules: {
@@ -18,7 +18,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["packages/*/src/**/*.{ts,tsx}"],
+    files: ["packages/*/src/**/*.{ts,tsx}", "apps/*/src/**/*.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/explicit-module-boundary-types": "error",

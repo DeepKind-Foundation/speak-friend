@@ -1,0 +1,46 @@
+/* Identity: the gate of a mine in starlight. Silver hairlines on night-blue stone. */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-16: 64px;
+
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Source Serif 4", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --bg: oklch(94% 0.012 250);
+  --ink: oklch(22% 0.03 258);
+  --dim: oklch(44% 0.03 255);
+  --rule: oklch(80% 0.015 250);
+  --silver: oklch(38% 0.06 255);
+  --action: oklch(87% 0.2 125);
+  --action-ink: oklch(19% 0.02 285);
+  --action-edge: oklch(53% 0.13 125);
+
+  --tk-t: oklch(40% 0.1 245);
+  --tk-a: oklch(42% 0.14 290);
+  --tk-s: oklch(40% 0.1 150);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(17% 0.03 258);
+    --ink: oklch(92% 0.01 250);
+    --dim: oklch(70% 0.03 255);
+    --rule: oklch(34% 0.03 255);
+    --silver: oklch(82% 0.04 250);
+    --action-edge: transparent;
+
+    --tk-t: oklch(82% 0.06 240);
+    --tk-a: oklch(80% 0.09 290);
+    --tk-s: oklch(81% 0.1 150);
+
+    color-scheme: dark;
+  }
+}

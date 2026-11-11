@@ -75,3 +75,10 @@ pnpm typecheck
 ## Licence
 
 MIT
+
+## Releasing
+
+1. Set the new version in `packages/*/package.json` and merge it to `main`.
+2. Tag it: `git tag v0.1.0-alpha.2 && git push origin v0.1.0-alpha.2`.
+
+The release workflow checks that the tag matches both packages, runs the CI checks, publishes with provenance (prereleases under `next`, stable versions under `latest`) and creates a GitHub release.

@@ -1,5 +1,5 @@
 // Packs every public package and stages it on npm for approval.
-// Prereleases go to the "next" tag. Versions already on npm are skipped.
+// Every release is tagged "latest". Versions already on npm are skipped.
 // The packed copy is staged, because pnpm rewrites workspace: dependencies
 // when packing and npm does not.
 import { execFileSync } from "node:child_process";
@@ -10,7 +10,7 @@ import { join } from "node:path";
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const version = (args.find((a) => !a.startsWith("--")) ?? "").replace(/^v/, "");
-const distTag = version.includes("-") ? "next" : "latest";
+const distTag = "latest";
 const out = mkdtempSync(join(tmpdir(), "release-"));
 
 const run = (cmd, cmdArgs, options = {}) => execFileSync(cmd, cmdArgs, { encoding: "utf8", ...options });

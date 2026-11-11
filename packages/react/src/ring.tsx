@@ -9,7 +9,10 @@ interface Box {
   height: number;
 }
 
-/** Follows the target's box through scrolling, resizing and layout changes. */
+/**
+ * Follows the target's box through scrolling, resizing and layout changes. Content added or resized above the target
+ * moves it without resizing it, so the document and the DOM are watched as well as the target itself.
+ */
 function useBox(target: string): Box | null {
   const [box, setBox] = useState<Box | null>(null);
   useEffect(() => {
@@ -33,10 +36,14 @@ function useBox(target: string): Box | null {
     window.addEventListener("resize", schedule);
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
     observer?.observe(el);
+    observer?.observe(document.body);
+    const mutations = new MutationObserver(schedule);
+    mutations.observe(document.body, { childList: true, subtree: true, attributes: true });
     return () => {
       window.removeEventListener("scroll", schedule, { capture: true });
       window.removeEventListener("resize", schedule);
       observer?.disconnect();
+      mutations.disconnect();
       if (frame) cancelAnimationFrame(frame);
     };
   }, [target]);

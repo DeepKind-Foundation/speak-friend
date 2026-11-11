@@ -149,6 +149,16 @@ h1 {
 .tk-s {
   color: var(--tk-s);
 }
+.tk-v {
+  color: var(--tk-v);
+}
+.tk-c {
+  color: var(--tk-c);
+  font-style: italic;
+}
+.tk-p {
+  color: var(--tk-p);
+}
 
 .door-figure {
   display: grid;

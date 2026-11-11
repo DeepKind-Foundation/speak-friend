@@ -1,22 +1,33 @@
 import type { JSX } from "react";
 
 /** Pages of the demo, in nav order. */
-export type PageId = "guide";
+export type PageId = "guide" | "workbench";
 
 const REPO = "https://github.com/DeepKind-Foundation/speak-friend";
 
+/** Where each page lives, as seen from each page. Relative, so the site works under any path. */
+const HREFS: Record<PageId, Record<PageId, string>> = {
+  guide: { guide: "./", workbench: "./workbench/" },
+  workbench: { guide: "../", workbench: "./" },
+};
+
 /** Wordmark and navigation shared by every page. */
 export function Header({ current }: { current: PageId }): JSX.Element {
+  const hrefs = HREFS[current];
+  const link = (page: PageId, text: string): JSX.Element => (
+    <a href={hrefs[page]} aria-current={current === page ? "page" : undefined}>
+      {text}
+    </a>
+  );
   return (
     <header className="site-header">
-      <a className="wordmark" href="./">
+      <a className="wordmark" href={hrefs.guide}>
         <span className="mini-door" aria-hidden="true" />
         Speak, Friend
       </a>
       <nav aria-label="Demo">
-        <a href="./" aria-current={current === "guide" ? "page" : undefined}>
-          Guide
-        </a>
+        {link("guide", "Guide")}
+        {link("workbench", "Workbench")}
         <a href={REPO}>GitHub</a>
       </nav>
     </header>

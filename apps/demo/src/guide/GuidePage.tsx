@@ -5,7 +5,8 @@ import { Header } from "../site/Header";
 import { Hero } from "./Hero";
 import { LedgerList } from "./LedgerList";
 import { ledger } from "./ledger";
-import { buildTours, labels } from "./tours";
+import { labels } from "../site/labels";
+import { buildTours } from "./tours";
 
 const tours = buildTours(ledger);
 

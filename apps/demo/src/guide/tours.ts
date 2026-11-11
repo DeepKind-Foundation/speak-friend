@@ -1,5 +1,4 @@
 import type { Tour } from "speak-friend";
-import type { GuideLabels } from "speak-friend-react";
 import type { LedgerEntry } from "./ledger";
 
 /** Identifier of the tour of the guide page. */
@@ -31,12 +30,3 @@ export function buildTours(entries: readonly LedgerEntry[]): Tour<null>[] {
     },
   ];
 }
-
-/** Every string the guide shows. */
-export const labels: GuideLabels = {
-  counter: (n, total) => `Step ${n} of ${total}`,
-  back: "Back",
-  next: "Next",
-  finish: "Finish",
-  close: "Close",
-};

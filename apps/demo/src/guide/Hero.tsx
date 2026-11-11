@@ -1,14 +1,11 @@
 import type { JSX } from "react";
-import { useTours } from "speak-friend-react";
 import { Door } from "../site/Door";
+import { useStartTour } from "../site/useStartTour";
 import { TOUR_ID } from "./tours";
 
 /** Headline, install command and the button that starts the tour. */
 export function Hero(): JSX.Element {
-  const tours = useTours();
-  const start = (): void => {
-    tours.start(TOUR_ID).catch((error: unknown) => console.error(error));
-  };
+  const start = useStartTour(TOUR_ID);
   return (
     <div className="hero">
       <div className="hero-copy">

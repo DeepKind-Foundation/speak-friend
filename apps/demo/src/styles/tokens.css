@@ -24,6 +24,9 @@
   --tk-t: oklch(40% 0.1 245);
   --tk-a: oklch(42% 0.14 290);
   --tk-s: oklch(40% 0.1 150);
+  --tk-v: oklch(44% 0.11 60);
+  --tk-c: oklch(46% 0.03 255);
+  --tk-p: oklch(42% 0.03 255);
 
   color-scheme: light;
 }
@@ -40,6 +43,9 @@
     --tk-t: oklch(82% 0.06 240);
     --tk-a: oklch(80% 0.09 290);
     --tk-s: oklch(81% 0.1 150);
+    --tk-v: oklch(82% 0.11 75);
+    --tk-c: oklch(66% 0.03 255);
+    --tk-p: oklch(70% 0.03 255);
 
     color-scheme: dark;
   }

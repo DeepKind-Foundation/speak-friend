@@ -1,6 +1,6 @@
 # speak-friend-react
 
-React bindings for [`speak-friend`](../core): a docked tour guide with a highlight ring. Built with a focus on accessibility.
+Accessible product tours for React: a docked, keyboard-first tour guide with a highlight ring, built on [`speak-friend`](../core). Screen reader friendly, and it never dims the page. Demo and workbench: https://speak-friend.dont-mind-ai.com/
 
 ```tsx
 import { TourGuide, TourProvider, useTours } from "speak-friend-react";

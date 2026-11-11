@@ -1,7 +1,7 @@
 {
   "name": "speak-friend-react",
   "version": "0.1.0-alpha.3",
-  "description": "React bindings for speak-friend: an accessible docked tour guide with a highlight ring.",
+  "description": "Accessible product tours for React: a docked, keyboard-first tour guide with a highlight ring that never dims the page. Screen reader friendly.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/DeepKind-Foundation/speak-friend/issues"
   },
-  "homepage": "https://github.com/DeepKind-Foundation/speak-friend#readme",
+  "homepage": "https://speak-friend.dont-mind-ai.com/",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -54,10 +54,18 @@
   },
   "keywords": [
     "tour",
+    "product-tour",
+    "guided-tour",
     "onboarding",
+    "user-onboarding",
     "walkthrough",
     "accessibility",
-    "react"
+    "a11y",
+    "wcag",
+    "screen-reader",
+    "typescript",
+    "react",
+    "react-tour"
   ],
   "publishConfig": {
     "access": "public"

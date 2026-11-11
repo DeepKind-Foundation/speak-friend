@@ -1,8 +1,14 @@
 # Speak, Friend
 
-Accessible page tours for React: a small headless engine, role-aware and resumable, with progress stored wherever you like.
+A small React library for accessible product tours and onboarding walkthroughs: a headless engine and a docked guide that never dims the page. Keyboard first, screen reader friendly, reduced motion respected, and the library has no text of its own.
 
-Built with a focus on accessibility: keyboard support, screen readers, reduced motion.
+Demo and workbench: https://speak-friend.dont-mind-ai.com/
+
+```bash
+pnpm add speak-friend speak-friend-react
+```
+
+Roles decide who is offered a tour, and progress is saved wherever you keep it.
 
 Status: early. The engine and the React guide are working.
 

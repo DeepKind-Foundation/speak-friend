@@ -2,11 +2,11 @@ const escapeValue = (value: string): string =>
   typeof CSS !== "undefined" && typeof CSS.escape === "function" ? CSS.escape(value) : value.replace(/["\\]/g, "\\$&");
 
 const find = (target: string): HTMLElement | null => {
-  const el = document.querySelector<HTMLElement>(`[data-tour="${escapeValue(target)}"]`);
-  return el && el.getClientRects().length > 0 ? el : null;
+  const candidates = document.querySelectorAll<HTMLElement>(`[data-tour="${escapeValue(target)}"]`);
+  return Array.from(candidates).find((el) => el.getClientRects().length > 0) ?? null;
 };
 
-/** The visible element marked `data-tour="<target>"`, or null. */
+/** The first visible element marked `data-tour="<target>"`, or null. */
 export const findTarget = (target: string): HTMLElement | null =>
   typeof document === "undefined" ? null : find(target);
 

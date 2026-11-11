@@ -106,6 +106,19 @@ describe("the guide", () => {
     await waitFor(() => expect(document.activeElement?.textContent).toBe("Second title"));
   });
 
+  it("marks the visible element when the target name is used twice", async () => {
+    setup();
+    const hidden = document.createElement("div");
+    hidden.setAttribute("data-tour", "nav");
+    hidden.getClientRects = () => [] as unknown as DOMRectList;
+    document.body.prepend(hidden);
+    await begin();
+    await press("Dalej");
+    await waitFor(() => expect(screen.getByText("Second title")).toBeTruthy());
+    expect(document.querySelector(".sf-ring")).not.toBeNull();
+    hidden.remove();
+  });
+
   it("skips a step whose target is not on the page", async () => {
     setup();
     await begin();

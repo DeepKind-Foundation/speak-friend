@@ -3,7 +3,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "paths": { "dont-panic": ["../core/src/index.ts"] }
+    "paths": { "speak-friend": ["../core/src/index.ts"] }
   },
   "include": ["src", "test"]
 }

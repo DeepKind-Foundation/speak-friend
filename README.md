@@ -1,22 +1,24 @@
-# Don't Panic
+# Speak, Friend
 
 Accessible page tours for React: a small headless engine, role-aware and resumable, with progress stored wherever you like.
 
 Built with a focus on accessibility: keyboard support, screen readers, reduced motion.
 
+The name is the password to the Doors of Durin: speak, friend, and enter.
+
 Status: early. The engine and the React guide are working.
 
 ## Packages
 
-| Package                              | Description                                                        | State   |
-| ------------------------------------ | ------------------------------------------------------------------ | ------- |
-| [`dont-panic`](packages/core)        | Engine: tours, chapters, steps, roles, progress. No DOM, no React. | working |
-| [`dont-panic-react`](packages/react) | Provider, docked guide and highlight ring for React 18+.           | working |
+| Package                                | Description                                                        | State   |
+| -------------------------------------- | ------------------------------------------------------------------ | ------- |
+| [`speak-friend`](packages/core)        | Engine: tours, chapters, steps, roles, progress. No DOM, no React. | working |
+| [`speak-friend-react`](packages/react) | Provider, docked guide and highlight ring for React 18+.           | working |
 
 ## Usage
 
 ```ts
-import { createTours, memoryStore } from "dont-panic";
+import { createTours, memoryStore } from "speak-friend";
 
 const tours = createTours({
   tours: [

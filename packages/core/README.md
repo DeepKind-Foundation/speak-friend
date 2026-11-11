@@ -1,10 +1,10 @@
-# dont-panic
+# speak-friend
 
 Headless engine for page tours: tours, chapters, steps, roles and progress. No DOM, no React. Built with a focus on
-accessibility; for React see [`dont-panic-react`](https://www.npmjs.com/package/dont-panic-react).
+accessibility; for React see [`speak-friend-react`](https://www.npmjs.com/package/speak-friend-react).
 
 ```ts
-import { createTours, memoryStore } from "dont-panic";
+import { createTours, memoryStore } from "speak-friend";
 
 const tours = createTours({
   tours: [

@@ -21,7 +21,7 @@ importers:
 
   packages/react:
     dependencies:
-      dont-panic:
+      speak-friend:
         specifier: workspace:*
         version: link:../core
     devDependencies:

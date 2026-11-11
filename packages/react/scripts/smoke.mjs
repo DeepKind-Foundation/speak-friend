@@ -1,7 +1,7 @@
 // Loads the built packages in plain Node ESM and renders on the server, to catch broken exports and imports.
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
-import { memoryStore } from "dont-panic";
+import { memoryStore } from "speak-friend";
 import { TourGuide, TourProvider } from "../dist/index.js";
 
 const labels = { counter: () => "", back: "", next: "", finish: "", close: "" };

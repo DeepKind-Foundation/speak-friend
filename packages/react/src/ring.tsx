@@ -49,7 +49,7 @@ export function Ring({ target }: { target: string }) {
   if (!box || typeof document === "undefined") return null;
   return createPortal(
     <div
-      className="dp-ring"
+      className="sf-ring"
       aria-hidden="true"
       style={{ top: box.top, left: box.left, width: box.width, height: box.height }}
     />,

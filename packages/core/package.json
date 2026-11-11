@@ -1,17 +1,17 @@
 {
-  "name": "dont-panic",
+  "name": "speak-friend",
   "version": "0.1.0-alpha.0",
   "description": "Headless engine for page tours: tours, chapters, steps, roles and progress. No DOM, no React.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DeepKind-Foundation/dont-panic.git",
+    "url": "git+https://github.com/DeepKind-Foundation/speak-friend.git",
     "directory": "packages/core"
   },
   "bugs": {
-    "url": "https://github.com/DeepKind-Foundation/dont-panic/issues"
+    "url": "https://github.com/DeepKind-Foundation/speak-friend/issues"
   },
-  "homepage": "https://github.com/DeepKind-Foundation/dont-panic#readme",
+  "homepage": "https://github.com/DeepKind-Foundation/speak-friend#readme",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.js",

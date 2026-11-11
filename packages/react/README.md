@@ -1,10 +1,10 @@
-# dont-panic-react
+# speak-friend-react
 
-React bindings for [`dont-panic`](../core): a docked tour guide with a highlight ring. Built with a focus on accessibility.
+React bindings for [`speak-friend`](../core): a docked tour guide with a highlight ring. Built with a focus on accessibility.
 
 ```tsx
-import { TourGuide, TourProvider, useTours } from "dont-panic-react";
-import "dont-panic-react/styles.css";
+import { TourGuide, TourProvider, useTours } from "speak-friend-react";
+import "speak-friend-react/styles.css";
 
 <TourProvider tours={tours} store={store} context={{ roles }} navigate={(route) => router.push(route)}>
   <App />
@@ -56,8 +56,8 @@ await tours.start("welcome");
 
 ## Styling
 
-`dont-panic-react/styles.css` defines the layout and a neutral light and dark theme. Override the custom properties to
-match your app: `--dp-surface`, `--dp-ink`, `--dp-line`, `--dp-accent`, `--dp-accent-ink`, `--dp-primary`,
-`--dp-primary-ink`, `--dp-primary-edge`, `--dp-done`, `--dp-halo`, `--dp-width`, `--dp-gap`, `--dp-z`.
+`speak-friend-react/styles.css` defines the layout and a neutral light and dark theme. Override the custom properties to
+match your app: `--sf-surface`, `--sf-ink`, `--sf-line`, `--sf-accent`, `--sf-accent-ink`, `--sf-primary`,
+`--sf-primary-ink`, `--sf-primary-edge`, `--sf-done`, `--sf-halo`, `--sf-width`, `--sf-gap`, `--sf-z`.
 
 The ring and the guide keep their borders in Windows high contrast mode, and animation is off with reduced motion.

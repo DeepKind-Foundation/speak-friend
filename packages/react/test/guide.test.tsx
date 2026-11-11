@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import axe from "axe-core";
-import { memoryStore, type Tour } from "dont-panic";
+import { memoryStore, type Tour } from "speak-friend";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TourGuide, TourProvider, useTours, type GuideLabels } from "../src/index";
 
@@ -178,7 +178,7 @@ describe("the guide", () => {
   it("draws a ring over the target without blocking it", async () => {
     setup();
     await begin();
-    const ring = document.querySelector(".dp-ring") as HTMLElement;
+    const ring = document.querySelector(".sf-ring") as HTMLElement;
     expect(ring.getAttribute("aria-hidden")).toBe("true");
     expect(ring.style.top).toBe("20px");
     expect(ring.style.width).toBe("100px");

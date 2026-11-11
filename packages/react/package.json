@@ -1,17 +1,17 @@
 {
-  "name": "dont-panic-react",
+  "name": "speak-friend-react",
   "version": "0.1.0-alpha.0",
-  "description": "React bindings for dont-panic: an accessible docked tour guide with a highlight ring.",
+  "description": "React bindings for speak-friend: an accessible docked tour guide with a highlight ring.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DeepKind-Foundation/dont-panic.git",
+    "url": "git+https://github.com/DeepKind-Foundation/speak-friend.git",
     "directory": "packages/react"
   },
   "bugs": {
-    "url": "https://github.com/DeepKind-Foundation/dont-panic/issues"
+    "url": "https://github.com/DeepKind-Foundation/speak-friend/issues"
   },
-  "homepage": "https://github.com/DeepKind-Foundation/dont-panic#readme",
+  "homepage": "https://github.com/DeepKind-Foundation/speak-friend#readme",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -39,7 +39,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "dont-panic": "workspace:*"
+    "speak-friend": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/react": "16.3.0",

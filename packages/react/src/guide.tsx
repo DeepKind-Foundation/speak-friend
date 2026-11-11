@@ -108,34 +108,34 @@ export function TourGuide({
           ref={guideRef}
           role="dialog"
           aria-labelledby={id}
-          className={className ? `dp-guide ${className}` : "dp-guide"}
+          className={className ? `sf-guide ${className}` : "sf-guide"}
           data-position={position}
         >
-          <div className="dp-band">
-            <span className="dp-count">{counter}</span>
-            <span className="dp-progress" aria-hidden="true">
+          <div className="sf-band">
+            <span className="sf-count">{counter}</span>
+            <span className="sf-progress" aria-hidden="true">
               {Array.from({ length: total }, (_, i) => (
-                <i key={i} className={i < index ? "dp-done" : i === index ? "dp-current" : undefined} />
+                <i key={i} className={i < index ? "sf-done" : i === index ? "sf-current" : undefined} />
               ))}
             </span>
           </div>
-          <div className="dp-body">
-            {createElement(`h${headingLevel}`, { id, ref: titleRef, tabIndex: -1, className: "dp-title" }, step.title)}
-            <p className="dp-text">{step.body}</p>
-            <div className="dp-actions">
-              <button type="button" className="dp-button" onClick={() => void tours.back()} disabled={index === 0}>
+          <div className="sf-body">
+            {createElement(`h${headingLevel}`, { id, ref: titleRef, tabIndex: -1, className: "sf-title" }, step.title)}
+            <p className="sf-text">{step.body}</p>
+            <div className="sf-actions">
+              <button type="button" className="sf-button" onClick={() => void tours.back()} disabled={index === 0}>
                 {labels.back}
               </button>
-              <button type="button" className="dp-button dp-primary" onClick={() => void tours.next()}>
+              <button type="button" className="sf-button sf-primary" onClick={() => void tours.next()}>
                 {last ? labels.finish : labels.next}
               </button>
-              <button type="button" className="dp-button dp-quiet" onClick={() => void tours.close()}>
+              <button type="button" className="sf-button sf-quiet" onClick={() => void tours.close()}>
                 {labels.close}
               </button>
             </div>
           </div>
           {announce === "live" && (
-            <div className="dp-visually-hidden" role="status">
+            <div className="sf-visually-hidden" role="status">
               {`${counter}: ${step.title}`}
             </div>
           )}

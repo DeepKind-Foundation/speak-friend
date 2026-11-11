@@ -119,6 +119,20 @@ describe("the guide", () => {
     hidden.remove();
   });
 
+  it("moves the ring when content above the target pushes it down", async () => {
+    setup();
+    await begin();
+    const ring = () => document.querySelector(".sf-ring") as HTMLElement;
+    await waitFor(() => expect(ring().style.top).toBe("20px"));
+    Element.prototype.getBoundingClientRect = function () {
+      return { top: 220, left: 30, width: 100, height: 40, right: 130, bottom: 260, x: 30, y: 220, toJSON() {} };
+    };
+    const banner = document.createElement("div");
+    document.body.prepend(banner);
+    await waitFor(() => expect(ring().style.top).toBe("220px"));
+    banner.remove();
+  });
+
   it("skips a step whose target is not on the page", async () => {
     setup();
     await begin();

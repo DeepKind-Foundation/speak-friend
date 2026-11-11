@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { componentCode, stylesheetCode, stylesheetCss, toText } from "../src/workbench/code";
+import { toText } from "../src/site/code-lines";
+import { componentCode, stylesheetCode, stylesheetCss } from "../src/workbench/code";
 import { defaults } from "../src/workbench/options";
 
 describe("componentCode", () => {

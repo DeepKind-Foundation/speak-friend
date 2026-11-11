@@ -1,0 +1,38 @@
+/** Where the demo is served. */
+export const SITE = "https://speak-friend.dont-mind-ai.com";
+/** The source repository. */
+export const REPO = "https://github.com/DeepKind-Foundation/speak-friend";
+/** The two packages on npm. */
+export const NPM = {
+  engine: "https://www.npmjs.com/package/speak-friend",
+  react: "https://www.npmjs.com/package/speak-friend-react",
+} as const;
+
+/** What search engines, social cards and agents are told about a page. */
+export interface PageMeta {
+  path: string;
+  title: string;
+  description: string;
+}
+
+/** Every page of the demo. The head tags, sitemap and llms.txt are all built from this. */
+export const PAGES = {
+  guide: {
+    path: "/",
+    title: "Speak, Friend: accessible product tours for React",
+    description:
+      "A small React library for accessible product tours and onboarding walkthroughs. Keyboard first, screen reader friendly, and it never dims the page.",
+  },
+  workbench: {
+    path: "/workbench/",
+    title: "React tour guide workbench | Speak, Friend",
+    description:
+      "Change the tour guide's position, theme, announce mode and colours, try a right-to-left page, and see the code and what a screen reader says.",
+  },
+} as const satisfies Record<string, PageMeta>;
+
+/** Name of a page. */
+export type PageId = keyof typeof PAGES;
+
+/** Full address of a page. */
+export const pageUrl = (id: PageId): string => SITE + PAGES[id].path;

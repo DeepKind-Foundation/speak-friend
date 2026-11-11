@@ -1,9 +1,8 @@
 import type { JSX } from "react";
+import { REPO } from "../seo/site";
 
 /** Pages of the demo, in nav order. */
 export type PageId = "guide" | "workbench";
-
-const REPO = "https://github.com/DeepKind-Foundation/speak-friend";
 
 /** Where each page lives, as seen from each page. Relative, so the site works under any path. */
 const HREFS: Record<PageId, Record<PageId, string>> = {

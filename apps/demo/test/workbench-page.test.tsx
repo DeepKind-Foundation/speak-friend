@@ -36,6 +36,13 @@ describe("WorkbenchPage", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("has one level 1 heading that says what the page is", () => {
+    render(<WorkbenchPage />);
+    const headings = screen.getAllByRole("heading", { level: 1 });
+    expect(headings).toHaveLength(1);
+    expect(headings[0]?.textContent).toBe("Accessible page tour guide for React");
+  });
+
   it("updates the component code when a prop changes", () => {
     render(<WorkbenchPage />);
     choose("start");

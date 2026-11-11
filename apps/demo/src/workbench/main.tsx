@@ -1,13 +1,5 @@
-import "../site/styles";
+import { mount } from "../site/mount";
 import "../styles/workbench.css";
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
 import { WorkbenchPage } from "./WorkbenchPage";
 
-const root = document.getElementById("root");
-if (!root) throw new Error("Missing #root element");
-createRoot(root).render(
-  <StrictMode>
-    <WorkbenchPage />
-  </StrictMode>,
-);
+mount(<WorkbenchPage />);

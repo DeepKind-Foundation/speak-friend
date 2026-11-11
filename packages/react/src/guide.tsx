@@ -36,6 +36,9 @@ export interface TourGuideProps {
   className?: string;
 }
 
+/** Space kept between the guide and focused or scrolled-to elements, in px. */
+const CLEARANCE = 24;
+
 const noSubscription = (): (() => void) => () => undefined;
 
 const reducedMotion = (): boolean =>
@@ -89,7 +92,12 @@ export function TourGuide({
 
   useEffect(() => {
     if (!running || !state.step) return;
-    findTarget(state.step.target)?.scrollIntoView({ block: "center", behavior: reducedMotion() ? "auto" : "smooth" });
+    const el = findTarget(state.step.target);
+    if (!el) return;
+    // A target taller than what the guide leaves free cannot be centred, so its top is brought into view instead.
+    const free = window.innerHeight - (guideRef.current?.offsetHeight ?? 0) - CLEARANCE;
+    const tall = el.getBoundingClientRect().height > free;
+    el.scrollIntoView({ block: tall ? "start" : "center", behavior: reducedMotion() ? "auto" : "smooth" });
   }, [running, state.step]);
 
   // Keep focused elements clear of the dock (WCAG 2.4.11).
@@ -98,7 +106,7 @@ export function TourGuide({
     if (!running || !guide) return;
     const style = document.documentElement.style;
     const before = style.getPropertyValue("scroll-padding-bottom");
-    const apply = (): void => style.setProperty("scroll-padding-bottom", `${guide.offsetHeight + 24}px`);
+    const apply = (): void => style.setProperty("scroll-padding-bottom", `${guide.offsetHeight + CLEARANCE}px`);
     apply();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(apply);
     observer?.observe(guide);

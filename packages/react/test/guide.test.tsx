@@ -58,6 +58,9 @@ function setup(props: Partial<React.ComponentProps<typeof TourGuide>> = {}, stor
   };
 }
 
+const rect = (top: number, left: number, width: number, height: number) =>
+  ({ top, left, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON() {} }) as DOMRect;
+
 const begin = async () => {
   const button = screen.getByText("begin");
   button.focus();
@@ -152,6 +155,41 @@ describe("the guide", () => {
     await waitFor(() => expect(ring().style.top).toBe("300px"));
     expect(ring().style.width).toBe("80px");
     replacement.remove();
+  });
+
+  const beginWith = async (box: DOMRect) => {
+    Element.prototype.getBoundingClientRect = () => box;
+    setup();
+    await begin();
+  };
+
+  it("keeps the whole ring on screen when the target is larger than the window", async () => {
+    await beginWith(rect(-100, -50, 5000, 3000));
+    const ring = document.querySelector(".sf-ring") as HTMLElement;
+    await waitFor(() => expect(ring.style.top).toBe("8px"));
+    expect(ring.style.left).toBe("8px");
+    expect(ring.style.width).toBe(`${window.innerWidth - 16}px`);
+    expect(ring.style.height).toBe(`${window.innerHeight - 16}px`);
+  });
+
+  it("draws no ring while the target is entirely off screen", async () => {
+    await beginWith(rect(5000, 30, 100, 40));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeTruthy());
+    expect(document.querySelector(".sf-ring")).toBeNull();
+  });
+
+  it("scrolls the top of a target taller than the window into view", async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    await beginWith(rect(0, 0, 100, window.innerHeight * 2));
+    await waitFor(() => expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: "start" })));
+  });
+
+  it("centres a target that fits in the window", async () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    await beginWith(rect(20, 30, 100, 40));
+    await waitFor(() => expect(scroll).toHaveBeenCalledWith(expect.objectContaining({ block: "center" })));
   });
 
   it("draws no ring while no visible element matches the target", async () => {

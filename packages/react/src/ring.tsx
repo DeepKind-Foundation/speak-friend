@@ -2,6 +2,9 @@ import { useEffect, useState, type JSX } from "react";
 import { createPortal } from "react-dom";
 import { findTarget } from "./wait-for-target.js";
 
+/** The outline, its offset and the halo reach about 7px outside the box, so the box stays this far from the window edge. */
+const INSET = 8;
+
 interface Box {
   top: number;
   left: number;
@@ -13,7 +16,8 @@ interface Box {
  * Follows the target's box through scrolling, resizing and layout changes. Content added or resized above the target
  * moves it without resizing it, so the document and the DOM are watched as well as the target itself. The element is
  * looked up again on every measure, so a target that is replaced or removed is followed or dropped, and the ring is
- * never left on a detached element.
+ * never left on a detached element. The ring is clipped to the window, with room for its outline, so a target larger
+ * than the window is ringed where it can be seen, and nothing is drawn while none of it is on screen.
  */
 function useBox(target: string): Box | null {
   const [box, setBox] = useState<Box | null>(null);
@@ -34,10 +38,18 @@ function useBox(target: string): Box | null {
         return;
       }
       const r = el.getBoundingClientRect();
+      const top = Math.max(r.top, INSET);
+      const left = Math.max(r.left, INSET);
+      const height = Math.min(r.bottom, window.innerHeight - INSET) - top;
+      const width = Math.min(r.right, window.innerWidth - INSET) - left;
+      if (width <= 0 || height <= 0) {
+        setBox(null);
+        return;
+      }
       setBox((p) =>
-        p && p.top === r.top && p.left === r.left && p.width === r.width && p.height === r.height
+        p && p.top === top && p.left === left && p.width === width && p.height === height
           ? p
-          : { top: r.top, left: r.left, width: r.width, height: r.height },
+          : { top, left, width, height },
       );
     };
     const schedule = (): void => {

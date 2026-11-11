@@ -41,6 +41,7 @@ await tours.start("welcome");
 - Focus moves to the step title on every step. `announce="live"` keeps focus and announces the step instead.
 - Escape closes the tour and returns focus to where it was. Starting again resumes from the same step. If that element is no longer on the page, focus goes to `fallbackFocus`, then the first `h1`, then `main`.
 - A step whose target is not on the page is skipped and leaves the count.
+- A target larger than the window is scrolled to its top and ringed where it can be seen. The ring is clipped to the window, with room for its outline, and is not drawn while none of the target is on screen. Small targets work best on phones, where the guide covers the lower part of the screen.
 - While the guide is open, `scroll-padding-bottom` keeps focused elements clear of it.
 - Name a target once per page. A name used on two pages can match the old page's element while the route changes, so a step can be shown before the new page has rendered. The ring looks its target up again on every layout change, so it follows the new element when one with that name appears.
 

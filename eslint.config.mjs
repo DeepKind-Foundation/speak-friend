@@ -25,5 +25,5 @@ export default tseslint.config(
       "no-console": ["error", { allow: ["error"] }],
     },
   },
-  { files: ["packages/react/scripts/**"], languageOptions: { globals: globals.node } },
+  { files: ["scripts/**", "packages/react/scripts/**"], languageOptions: { globals: globals.node } },
 );

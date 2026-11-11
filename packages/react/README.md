@@ -58,6 +58,7 @@ await tours.start("welcome");
 | --------------- | -------- | ----------------------------------------------------------- |
 | `labels`        | required | Every string: `counter`, `back`, `next`, `finish`, `close`. |
 | `position`      | `end`    | `start` or `end`.                                           |
+| `theme`         |          | `light` or `dark` forces a theme. Default: follows the OS.  |
 | `headingLevel`  | `2`      | Heading level of the step title.                            |
 | `announce`      | `focus`  | `focus` or `live`.                                          |
 | `closeOnEscape` | `true`   |                                                             |

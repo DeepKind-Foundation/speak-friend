@@ -1,29 +1,26 @@
 .sf-guide,
 .sf-ring {
-  --sf-surface: oklch(100% 0 0);
-  --sf-ink: oklch(23% 0.03 285);
-  --sf-line: oklch(62% 0.02 285);
-  --sf-accent: oklch(44% 0.19 290);
-  --sf-accent-ink: oklch(100% 0 0);
+  color-scheme: light dark;
+  --sf-surface: light-dark(oklch(100% 0 0), oklch(23% 0.035 285));
+  --sf-ink: light-dark(oklch(23% 0.03 285), oklch(95% 0.012 95));
+  --sf-line: light-dark(oklch(62% 0.02 285), oklch(62% 0.04 285));
+  --sf-accent: light-dark(oklch(44% 0.19 290), oklch(80% 0.11 300));
+  --sf-accent-ink: light-dark(oklch(100% 0 0), oklch(19% 0.02 285));
   --sf-primary: oklch(87% 0.2 125);
   --sf-primary-ink: oklch(19% 0.02 285);
-  --sf-primary-edge: oklch(53% 0.13 125);
-  --sf-done: oklch(53% 0.13 125);
-  --sf-halo: oklch(100% 0 0);
+  --sf-primary-edge: light-dark(oklch(53% 0.13 125), transparent);
+  --sf-done: light-dark(oklch(53% 0.13 125), oklch(81% 0.16 125));
+  --sf-halo: light-dark(oklch(100% 0 0), oklch(19% 0.02 285));
 }
 
-@media (prefers-color-scheme: dark) {
-  .sf-guide,
-  .sf-ring {
-    --sf-surface: oklch(23% 0.035 285);
-    --sf-ink: oklch(95% 0.012 95);
-    --sf-line: oklch(62% 0.04 285);
-    --sf-accent: oklch(80% 0.11 300);
-    --sf-accent-ink: oklch(19% 0.02 285);
-    --sf-primary-edge: transparent;
-    --sf-done: oklch(81% 0.16 125);
-    --sf-halo: oklch(19% 0.02 285);
-  }
+.sf-guide[data-theme="light"],
+.sf-ring[data-theme="light"] {
+  color-scheme: light;
+}
+
+.sf-guide[data-theme="dark"],
+.sf-ring[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 .sf-visually-hidden {

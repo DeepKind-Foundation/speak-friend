@@ -72,6 +72,16 @@ pnpm test
 pnpm typecheck
 ```
 
+`pnpm install` registers [lefthook](https://github.com/evilmartians/lefthook) git hooks. On commit they format and lint the staged files and run the type check; on push they run the tests. CI runs the same commit hooks on every file and fails if they change anything.
+
 ## Licence
 
 MIT
+
+## Releasing
+
+1. Set the new version in `packages/*/package.json` and merge it to `main`.
+2. Tag it: `git tag v0.1.0-alpha.2 && git push origin v0.1.0-alpha.2`.
+3. Approve the staged packages on npmjs.com (Staged Packages tab) or with `npm stage approve <stage-id>`. Approval asks for 2FA.
+
+The release workflow checks that the tag matches both packages, runs the CI checks, stages both packages with provenance (prereleases under `next`, stable versions under `latest`) and creates a GitHub release. Nothing is installable until step 3.

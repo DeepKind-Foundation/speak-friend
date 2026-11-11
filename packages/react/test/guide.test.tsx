@@ -133,6 +133,36 @@ describe("the guide", () => {
     banner.remove();
   });
 
+  // A detached element has no boxes. The test mimics that instead of removing nodes that React owns.
+  const detach = (el: Element | null): void => {
+    (el as HTMLElement).getClientRects = () => [] as unknown as DOMRectList;
+  };
+
+  it("follows a new element that replaces the target", async () => {
+    setup();
+    await begin();
+    const ring = () => document.querySelector(".sf-ring") as HTMLElement;
+    await waitFor(() => expect(ring().style.top).toBe("20px"));
+    const replacement = document.createElement("div");
+    replacement.setAttribute("data-tour", "card");
+    replacement.getBoundingClientRect = () =>
+      ({ top: 300, left: 50, width: 80, height: 30, right: 130, bottom: 330, x: 50, y: 300, toJSON() {} }) as DOMRect;
+    detach(document.querySelector('[data-tour="card"]'));
+    document.body.append(replacement);
+    await waitFor(() => expect(ring().style.top).toBe("300px"));
+    expect(ring().style.width).toBe("80px");
+    replacement.remove();
+  });
+
+  it("draws no ring while no visible element matches the target", async () => {
+    setup();
+    await begin();
+    await waitFor(() => expect(document.querySelector(".sf-ring")).not.toBeNull());
+    detach(document.querySelector('[data-tour="card"]'));
+    document.body.append(document.createElement("div"));
+    await waitFor(() => expect(document.querySelector(".sf-ring")).toBeNull());
+  });
+
   it("skips a step whose target is not on the page", async () => {
     setup();
     await begin();

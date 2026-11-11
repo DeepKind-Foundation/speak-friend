@@ -42,6 +42,7 @@ await tours.start("welcome");
 - Escape closes the tour and returns focus to where it was. Starting again resumes from the same step.
 - A step whose target is not on the page is skipped and leaves the count.
 - While the guide is open, `scroll-padding-bottom` keeps focused elements clear of it.
+- Name a target once per page. A name used on two pages can match the old page's element while the route changes, so a step can be shown before the new page has rendered. The ring looks its target up again on every layout change, so it follows the new element when one with that name appears.
 
 ## Props of `TourProvider`
 

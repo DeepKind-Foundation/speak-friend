@@ -1,6 +1,6 @@
 {
   "name": "speak-friend-react",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "React bindings for speak-friend: an accessible docked tour guide with a highlight ring.",
   "license": "MIT",
   "repository": {

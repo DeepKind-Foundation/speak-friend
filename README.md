@@ -8,10 +8,10 @@ Status: early. The engine and the React guide are working.
 
 ## Packages
 
-| Package                              | Description                                                        | State           |
-| ------------------------------------ | ------------------------------------------------------------------ | --------------- |
-| [`dont-panic`](packages/core)        | Engine: tours, chapters, steps, roles, progress. No DOM, no React. | working         |
-| [`dont-panic-react`](packages/react) | Provider, popover and highlight for React 18+.                     | not implemented |
+| Package                              | Description                                                        | State   |
+| ------------------------------------ | ------------------------------------------------------------------ | ------- |
+| [`dont-panic`](packages/core)        | Engine: tours, chapters, steps, roles, progress. No DOM, no React. | working |
+| [`dont-panic-react`](packages/react) | Provider, docked guide and highlight ring for React 18+.           | working |
 
 ## Usage
 

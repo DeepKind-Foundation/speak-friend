@@ -1,7 +1,7 @@
-import { createElement, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { createElement, useEffect, useId, useLayoutEffect, useRef, useSyncExternalStore, type JSX } from "react";
 import { createPortal } from "react-dom";
 import { Ring } from "./ring.js";
-import { useTourState, useTours } from "./provider.js";
+import { useRun, useTourState, useTours } from "./provider.js";
 import { findTarget } from "./wait-for-target.js";
 
 /** Every string the guide shows. The library has no text of its own. */
@@ -28,7 +28,10 @@ export interface TourGuideProps {
   className?: string;
 }
 
-const reducedMotion = () => typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const noSubscription = (): (() => void) => () => undefined;
+
+const reducedMotion = (): boolean =>
+  typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** The docked guide with its highlight ring. Renders only while a tour is running. */
 export function TourGuide({
@@ -38,18 +41,22 @@ export function TourGuide({
   announce = "focus",
   closeOnEscape = true,
   className,
-}: TourGuideProps) {
+}: TourGuideProps): JSX.Element | null {
   const tours = useTours();
+  const run = useRun();
   const state = useTourState();
   const id = useId();
   const titleRef = useRef<HTMLElement>(null);
   const guideRef = useRef<HTMLElement>(null);
   const opener = useRef<Element | null>(null);
-  const [mounted, setMounted] = useState(false);
+  // False on the server and during hydration, true afterwards: the guide only exists in the browser.
+  const mounted = useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
   const running = state.status === "running" && state.step !== null;
   const stepId = state.step?.id;
-
-  useEffect(() => setMounted(true), []);
 
   // Remember where focus was when the tour started and give it back when the tour ends.
   useLayoutEffect(() => {
@@ -75,25 +82,27 @@ export function TourGuide({
   useEffect(() => {
     const guide = guideRef.current;
     if (!running || !guide) return;
-    const root = document.documentElement;
-    const apply = () => root.style.setProperty("scroll-padding-bottom", `${guide.offsetHeight + 24}px`);
+    const style = document.documentElement.style;
+    const before = style.getPropertyValue("scroll-padding-bottom");
+    const apply = (): void => style.setProperty("scroll-padding-bottom", `${guide.offsetHeight + 24}px`);
     apply();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(apply);
     observer?.observe(guide);
     return () => {
       observer?.disconnect();
-      root.style.removeProperty("scroll-padding-bottom");
+      if (before) style.setProperty("scroll-padding-bottom", before);
+      else style.removeProperty("scroll-padding-bottom");
     };
   }, [running]);
 
   useEffect(() => {
     if (!running || !closeOnEscape) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !e.defaultPrevented && !e.isComposing) void tours.close();
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === "Escape" && !e.defaultPrevented && !e.isComposing) run(tours.close());
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [running, closeOnEscape, tours]);
+  }, [running, closeOnEscape, tours, run]);
 
   if (!mounted || !running || !state.step) return null;
   const { step, index, total } = state;
@@ -102,7 +111,7 @@ export function TourGuide({
 
   return (
     <>
-      <Ring target={step.target} />
+      <Ring key={step.id} target={step.target} />
       {createPortal(
         <section
           ref={guideRef}
@@ -123,13 +132,13 @@ export function TourGuide({
             {createElement(`h${headingLevel}`, { id, ref: titleRef, tabIndex: -1, className: "sf-title" }, step.title)}
             <p className="sf-text">{step.body}</p>
             <div className="sf-actions">
-              <button type="button" className="sf-button" onClick={() => void tours.back()} disabled={index === 0}>
+              <button type="button" className="sf-button" onClick={() => run(tours.back())} disabled={index === 0}>
                 {labels.back}
               </button>
-              <button type="button" className="sf-button sf-primary" onClick={() => void tours.next()}>
+              <button type="button" className="sf-button sf-primary" onClick={() => run(tours.next())}>
                 {last ? labels.finish : labels.next}
               </button>
-              <button type="button" className="sf-button sf-quiet" onClick={() => void tours.close()}>
+              <button type="button" className="sf-button sf-quiet" onClick={() => run(tours.close())}>
                 {labels.close}
               </button>
             </div>

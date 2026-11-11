@@ -1,10 +1,12 @@
-const escape = (v: string) => v.replace(/["\\]/g, "\\$&");
+const escapeValue = (value: string): string =>
+  typeof CSS !== "undefined" && typeof CSS.escape === "function" ? CSS.escape(value) : value.replace(/["\\]/g, "\\$&");
 
 const find = (target: string): HTMLElement | null => {
-  const el = document.querySelector<HTMLElement>(`[data-tour="${escape(target)}"]`);
+  const el = document.querySelector<HTMLElement>(`[data-tour="${escapeValue(target)}"]`);
   return el && el.getClientRects().length > 0 ? el : null;
 };
 
+/** The visible element marked `data-tour="<target>"`, or null. */
 export const findTarget = (target: string): HTMLElement | null =>
   typeof document === "undefined" ? null : find(target);
 
@@ -12,8 +14,8 @@ export const findTarget = (target: string): HTMLElement | null =>
 export function waitForTarget(target: string, timeout: number): Promise<boolean> {
   if (typeof document === "undefined") return Promise.resolve(false);
   if (find(target)) return Promise.resolve(true);
-  return new Promise((resolve) => {
-    const done = (found: boolean) => {
+  return new Promise<boolean>((resolve) => {
+    const done = (found: boolean): void => {
       observer.disconnect();
       clearTimeout(timer);
       resolve(found);

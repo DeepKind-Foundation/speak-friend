@@ -43,6 +43,15 @@ await tours.start("welcome");
 - A step whose target is not on the page is skipped and leaves the count.
 - While the guide is open, `scroll-padding-bottom` keeps focused elements clear of it.
 
+## Props of `TourProvider`
+
+`tours`, `store`, `context`, `navigate` and `maxDismissals` are passed to the engine. Two more:
+
+| Prop            | Default         | Description                                                          |
+| --------------- | --------------- | -------------------------------------------------------------------- |
+| `targetTimeout` | `1500`          | Milliseconds to wait for a step's target before skipping the step.   |
+| `onError`       | `console.error` | Called when a step change fails, for example when the store rejects. |
+
 ## Props of `TourGuide`
 
 | Prop            | Default  | Description                                                 |

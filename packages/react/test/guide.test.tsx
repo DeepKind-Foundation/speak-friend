@@ -210,4 +210,74 @@ describe("the guide", () => {
     });
     expect(result.violations.map((v) => v.id)).toEqual([]);
   });
+
+  it("reports a failing step change through onError instead of leaving an unhandled rejection", async () => {
+    const onError = vi.fn();
+    let fail = false;
+    const base = memoryStore();
+    const flaky = {
+      get: base.get,
+      set: async (id: string, progress: Parameters<typeof base.set>[1]) => {
+        if (fail) throw new Error("store down");
+        await base.set(id, progress);
+      },
+    };
+    render(
+      <TourProvider tours={tours} store={flaky} context={context} targetTimeout={30} onError={onError}>
+        <Starter />
+        <div data-tour="card">card</div>
+        <div data-tour="nav">nav</div>
+        <div data-tour="list">list</div>
+        <TourGuide labels={labels} />
+      </TourProvider>,
+    );
+    await begin();
+    fail = true;
+    await press("Dalej");
+    await waitFor(() => expect(onError).toHaveBeenCalled());
+    expect((onError.mock.calls[0]?.[0] as Error).message).toBe("store down");
+  });
+
+  it("puts back a scroll padding the page had set itself", async () => {
+    document.documentElement.style.setProperty("scroll-padding-bottom", "10px");
+    setup();
+    await begin();
+    expect(document.documentElement.style.getPropertyValue("scroll-padding-bottom")).not.toBe("10px");
+    await act(async () => {
+      fireEvent.keyDown(document, { key: "Escape" });
+    });
+    await waitFor(() => expect(document.documentElement.style.getPropertyValue("scroll-padding-bottom")).toBe("10px"));
+    document.documentElement.style.removeProperty("scroll-padding-bottom");
+  });
+
+  it("finds a target whose name has quotes or a backslash", async () => {
+    const odd: Tour<Ctx> = {
+      id: "odd",
+      version: 1,
+      chapters: [{ id: "c", route: "/", steps: [{ id: "s", target: 'a"b\\c', title: "Odd", body: "x" }] }],
+    };
+    const store = memoryStore();
+    render(
+      <TourProvider tours={[odd]} store={store} context={context} targetTimeout={30}>
+        <button type="button" data-tour={'a"b\\c'}>
+          target
+        </button>
+        <OddStarter />
+        <TourGuide labels={labels} />
+      </TourProvider>,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByText("go"));
+    });
+    expect(await screen.findByRole("dialog", { name: "Odd" })).toBeTruthy();
+  });
 });
+
+function OddStarter() {
+  const t = useTours<Ctx>();
+  return (
+    <button type="button" onClick={() => void t.start("odd")}>
+      go
+    </button>
+  );
+}

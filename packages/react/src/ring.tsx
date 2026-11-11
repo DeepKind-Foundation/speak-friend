@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { createPortal } from "react-dom";
 import { findTarget } from "./wait-for-target.js";
 
@@ -14,9 +14,9 @@ function useBox(target: string): Box | null {
   const [box, setBox] = useState<Box | null>(null);
   useEffect(() => {
     const el = findTarget(target);
-    if (!el) return setBox(null);
+    if (!el) return;
     let frame = 0;
-    const measure = () => {
+    const measure = (): void => {
       frame = 0;
       const r = el.getBoundingClientRect();
       setBox((p) =>
@@ -25,7 +25,7 @@ function useBox(target: string): Box | null {
           : { top: r.top, left: r.left, width: r.width, height: r.height },
       );
     };
-    const schedule = () => {
+    const schedule = (): void => {
       if (!frame) frame = requestAnimationFrame(measure);
     };
     measure();
@@ -44,7 +44,7 @@ function useBox(target: string): Box | null {
 }
 
 /** A ring around the element marked `data-tour="<target>"`. It never blocks pointer events. */
-export function Ring({ target }: { target: string }) {
+export function Ring({ target }: { target: string }): JSX.Element | null {
   const box = useBox(target);
   if (!box || typeof document === "undefined") return null;
   return createPortal(

@@ -1,37 +1,64 @@
-import { createContext, useContext, useMemo, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useContext, useMemo, useSyncExternalStore, type JSX, type ReactNode } from "react";
 import { createTours, type Options, type Snapshot, type Tours } from "speak-friend";
 import { waitForTarget } from "./wait-for-target.js";
 
-const TourContext = createContext<Tours<never> | null>(null);
+interface TourContextValue {
+  tours: Tours<never>;
+  onError: (error: unknown) => void;
+}
+
+const TourContext = createContext<TourContextValue | null>(null);
+
+const logError = (error: unknown): void => console.error(error);
 
 export interface TourProviderProps<C> extends Omit<Options<C>, "isAvailable"> {
   children: ReactNode;
   /** How long to wait for a step's target to appear before skipping the step, in ms. Default 1500. */
   targetTimeout?: number;
+  /** Called when a step change fails, for example when the progress store rejects. Default `console.error`. */
+  onError?: (error: unknown) => void;
 }
 
-export function TourProvider<C>({ children, targetTimeout = 1500, ...options }: TourProviderProps<C>) {
+/** Creates the tour controller and shares it with the components below. */
+export function TourProvider<C>({
+  children,
+  targetTimeout = 1500,
+  onError = logError,
+  ...options
+}: TourProviderProps<C>): JSX.Element {
   const { tours, store, context, navigate, maxDismissals } = options;
-  const controller = useMemo(
-    () =>
-      createTours<C>({
+  const value = useMemo<TourContextValue>(
+    () => ({
+      tours: createTours<C>({
         tours,
         store,
         context,
         navigate,
         maxDismissals,
         isAvailable: (step) => waitForTarget(step.target, targetTimeout),
-      }),
-    [tours, store, context, navigate, maxDismissals, targetTimeout],
+      }) as unknown as Tours<never>,
+      onError,
+    }),
+    [tours, store, context, navigate, maxDismissals, targetTimeout, onError],
   );
-  return <TourContext.Provider value={controller as unknown as Tours<never>}>{children}</TourContext.Provider>;
+  return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
 }
+
+const useContextValue = (): TourContextValue => {
+  const value = useContext(TourContext);
+  if (!value) throw new Error("useTours must be used inside TourProvider");
+  return value;
+};
 
 /** The tour controller: offered, start, next, back, close, restart, dismiss. */
 export function useTours<C = unknown>(): Tours<C> {
-  const t = useContext(TourContext);
-  if (!t) throw new Error("useTours must be used inside TourProvider");
-  return t as unknown as Tours<C>;
+  return useContextValue().tours as unknown as Tours<C>;
+}
+
+/** Runs a step change and reports a failure through the provider's `onError`. */
+export function useRun(): (action: Promise<void>) => void {
+  const { onError } = useContextValue();
+  return (action) => void action.catch(onError);
 }
 
 /** The current state; re-renders on every change. */

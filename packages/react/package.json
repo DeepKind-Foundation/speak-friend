@@ -1,6 +1,6 @@
 {
   "name": "dont-panic-react",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "React bindings for dont-panic: an accessible docked tour guide with a highlight ring.",
   "license": "MIT",
   "repository": {
@@ -56,5 +56,9 @@
     "walkthrough",
     "accessibility",
     "react"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  }
 }

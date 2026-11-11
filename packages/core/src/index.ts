@@ -148,7 +148,9 @@ export function createTours<C>(options: Options<C>): Tours<C> {
         );
         return;
       }
-      i += direction;
+      // Not on the page: drop it from the count, so the position and the total stay honest.
+      places.splice(i, 1);
+      if (direction === -1) i -= 1;
     }
     if (direction === 1) await finish();
     else if (places.length) await show(0, 1);

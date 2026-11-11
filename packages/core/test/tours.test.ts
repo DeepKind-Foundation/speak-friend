@@ -101,6 +101,16 @@ describe("walking a tour", () => {
     expect(tours.snapshot()).toMatchObject({ tourId: null, status: "idle" });
   });
 
+  it("drops a step whose target is missing from the position and the total", async () => {
+    const { tours } = setup(["member"], { isAvailable: (s: { id: string }) => s.id !== "list" });
+    await tours.start("welcome");
+    expect(tours.snapshot().total).toBe(3);
+    await tours.next();
+    expect(tours.snapshot()).toMatchObject({ step: { id: "submit" }, index: 1, total: 2 });
+    await tours.back();
+    expect(tours.snapshot()).toMatchObject({ step: { id: "card" }, index: 0, total: 2 });
+  });
+
   it("counts only the steps that will be shown", async () => {
     const { tours } = setup(["member", "mentor"]);
     await tours.start("welcome");

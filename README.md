@@ -4,7 +4,7 @@ Accessible page tours for React: a small headless engine, role-aware and resumab
 
 Built with a focus on accessibility: keyboard support, screen readers, reduced motion.
 
-Status: early. The engine in `packages/core` is working; the React bindings are not implemented yet.
+Status: early. The engine and the React guide are working.
 
 ## Packages
 

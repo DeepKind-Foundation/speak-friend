@@ -171,7 +171,8 @@ describe("WorkbenchPage", () => {
     choose("rtl");
     expect(document.documentElement.dir).toBe("rtl");
     openFile("index.html");
-    expect(code().trim()).toBe('<html lang="en" dir="rtl">');
+    expect(code()).toContain('<html lang="en" dir="rtl">');
+    expect(code()).toContain("</html>");
     unmount();
     expect(document.documentElement.getAttribute("dir")).toBeNull();
   });

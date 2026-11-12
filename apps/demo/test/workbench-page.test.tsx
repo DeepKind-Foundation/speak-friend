@@ -40,7 +40,8 @@ describe("WorkbenchPage", () => {
     render(<WorkbenchPage />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(code()).toContain('import { TourGuide, TourProvider } from "speak-friend-react";');
-    expect(code()).toContain('position="end"');
+    expect(code()).toContain("labels={labels}");
+    expect(code()).not.toContain("position=");
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
@@ -137,8 +138,8 @@ describe("WorkbenchPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Changes only" }));
     expect(code()).toContain("No changes");
     choose("start");
-    expect(code()).toContain('-        position="end"');
     expect(code()).toContain('+        position="start"');
+    expect(code()).not.toContain("-        position");
     expect(code()).not.toContain("import");
   });
 

@@ -1,6 +1,6 @@
 {
   "name": "speak-friend",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "description": "Headless engine for accessible product tours and onboarding walkthroughs: tours, chapters, steps, roles and progress. No DOM, no React.",
   "license": "MIT",
   "repository": {

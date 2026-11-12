@@ -85,7 +85,9 @@ export function TourGuide({
     () => true,
     () => false,
   );
-  const running = state.status === "running" && state.step !== null;
+  // A tour is active from the moment it starts, even while the first step is still being waited for.
+  const active = state.status === "running";
+  const running = active && state.step !== null;
   const stepId = state.step?.id;
 
   useLayoutEffect(() => {
@@ -94,13 +96,13 @@ export function TourGuide({
 
   // Remember where focus was when the tour started and give it back when the tour ends.
   useLayoutEffect(() => {
-    if (!running) return;
+    if (!active) return;
     opener.current = document.activeElement;
     return () => {
       restoreFocus(opener.current, fallback.current);
       opener.current = null;
     };
-  }, [running]);
+  }, [active]);
 
   useLayoutEffect(() => {
     if (running && announce === "focus") titleRef.current?.focus({ preventScroll: true });
@@ -151,19 +153,43 @@ export function TourGuide({
   }, [running, state.step]);
 
   useEffect(() => {
-    if (!running || !closeOnEscape) return;
+    if (!active || !closeOnEscape) return;
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === "Escape" && !e.defaultPrevented && !e.isComposing) run(tours.close());
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [running, closeOnEscape, tours, run]);
+  }, [active, closeOnEscape, tours, run]);
 
-  if (!mounted || !running || !state.step) return null;
+  if (!mounted || !active) return null;
+  const host = container?.() ?? document.body;
   const { step, index, total } = state;
+  if (!step) {
+    // The first step is not on the page yet. Say so once the wait is noticeable, and let the person give up.
+    if (!state.waiting || !labels.waiting) return null;
+    return createPortal(
+      <section
+        role="status"
+        aria-busy="true"
+        className={className ? `sf-guide sf-starting ${className}` : "sf-guide sf-starting"}
+        data-position={position}
+        data-edge="bottom"
+        data-theme={theme}
+      >
+        <div className="sf-body">
+          <p className="sf-waiting">{labels.waiting}</p>
+          <div className="sf-actions">
+            <button type="button" className="sf-button sf-quiet" onClick={() => run(tours.close())}>
+              {labels.close}
+            </button>
+          </div>
+        </div>
+      </section>,
+      host,
+    );
+  }
   const last = index === total - 1;
   const counter = labels.counter(index + 1, total);
-  const host = container?.() ?? document.body;
 
   return (
     <>

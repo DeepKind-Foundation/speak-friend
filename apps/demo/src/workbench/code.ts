@@ -14,6 +14,7 @@ export function componentCode(options: Options): CodeLines {
     stringProp("position", options.position),
     ...(options.theme === "system" ? [] : [stringProp("theme", options.theme)]),
     stringProp("announce", options.announce),
+    ...(options.dim === "on" ? [[t("punct", "  "), t("attr", "dim")]] : []),
     [t("punct", "/>")],
   ];
 }

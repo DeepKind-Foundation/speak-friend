@@ -89,3 +89,32 @@ test("reduced motion is honoured", async ({ page }) => {
   );
   expect(animated).toBe(0);
 });
+
+test.describe("dimming", () => {
+  /** How many shadows the ring has: its halo, plus the tint when dimming is drawn. */
+  const shadows = async (page: Page): Promise<number> => {
+    await page.goto("workbench/");
+    await page.getByRole("radio", { name: "on", exact: true }).check();
+    await page.getByRole("button", { name: /tour/i }).first().click();
+    await expect(page.locator(".sf-ring[data-dim]")).toBeVisible();
+    const value = await page.locator(".sf-ring").evaluate((el) => getComputedStyle(el).boxShadow);
+    return value.match(/0px 0px 0px/g)?.length ?? 0;
+  };
+
+  test("tints the page, and the page stays clickable", async ({ page }) => {
+    expect(await shadows(page)).toBe(2);
+    const events = await page.locator(".sf-ring").evaluate((el) => getComputedStyle(el).pointerEvents);
+    expect(events).toBe("none");
+  });
+
+  test("is left out when more contrast is asked for", async ({ page }) => {
+    await page.emulateMedia({ contrast: "more" });
+    expect(await shadows(page)).toBe(1);
+  });
+
+  test("is left out in forced-colors mode", async ({ page }) => {
+    await page.emulateMedia({ forcedColors: "active" });
+    // The browser drops shadows itself in this mode; the tint must not come back.
+    expect(await shadows(page)).toBeLessThan(2);
+  });
+});

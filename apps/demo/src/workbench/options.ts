@@ -4,6 +4,8 @@ export type Position = "start" | "end";
 export type ThemeChoice = "system" | "light" | "dark";
 /** Whether a step moves focus to its title or is announced by a live region. */
 export type Announce = "focus" | "live";
+/** Whether the page around the ring is tinted. */
+export type Dim = "off" | "on";
 /** Reading direction of the whole page. */
 export type Direction = "ltr" | "rtl";
 /** Colour presets for the guide. `default` overrides nothing. */
@@ -14,6 +16,7 @@ export interface Options {
   position: Position;
   theme: ThemeChoice;
   announce: Announce;
+  dim: Dim;
   skin: SkinName;
   direction: Direction;
 }
@@ -23,6 +26,7 @@ export const defaults: Options = {
   position: "end",
   theme: "system",
   announce: "focus",
+  dim: "off",
   skin: "default",
   direction: "ltr",
 };

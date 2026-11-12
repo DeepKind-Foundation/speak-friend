@@ -39,6 +39,11 @@ export interface TourGuideProps {
    * while it is open. Called on every render while a tour runs.
    */
   container?: () => HTMLElement | null;
+  /**
+   * Tint the page around the ring. Visual only: it never blocks clicks or focus and nothing is made inert. It is not
+   * drawn when the person asks for more contrast or less transparency, or in forced-colors mode. Default false.
+   */
+  dim?: boolean;
   className?: string;
 }
 
@@ -60,6 +65,7 @@ export function TourGuide({
   closeOnEscape = true,
   fallbackFocus,
   container,
+  dim = false,
   className,
 }: TourGuideProps): JSX.Element | null {
   const tours = useTours();
@@ -149,7 +155,7 @@ export function TourGuide({
 
   return (
     <>
-      <Ring key={step.id} target={step.target} theme={theme} container={host} />
+      <Ring key={step.id} target={step.target} theme={theme} dim={dim} container={host} />
       {createPortal(
         <section
           ref={guideRef}

@@ -328,3 +328,88 @@ describe("known progress", () => {
     expect(heard).not.toHaveBeenCalled();
   });
 });
+
+describe("telling isAvailable about a navigation", () => {
+  it("says a step is the first on a new page, and not the ones after it", async () => {
+    const seen: [string, boolean][] = [];
+    const { tours } = setup(["member"], {
+      isAvailable: (s: { id: string }, info: { navigated: boolean }) => {
+        seen.push([s.id, info.navigated]);
+        return true;
+      },
+    });
+    await tours.start("welcome");
+    await tours.next();
+    await tours.next();
+    expect(seen).toEqual([
+      ["card", true],
+      ["list", true],
+      ["submit", false],
+    ]);
+  });
+});
+
+describe("waiting for a step", () => {
+  const slow = () => {
+    let open!: (available: boolean) => void;
+    const wait = new Promise<boolean>((resolve) => (open = resolve));
+    let first = true;
+    return { open, isAvailable: () => (first ? ((first = false), true) : wait) };
+  };
+  const flush = async (ms = 0) => {
+    await vi.advanceTimersByTimeAsync(ms);
+  };
+
+  it("is false while a step is shown", async () => {
+    const { tours } = setup();
+    await tours.start("welcome");
+    expect(tours.snapshot().waiting).toBe(false);
+  });
+
+  it("stays false when the next step is ready at once, and tells listeners nothing extra", async () => {
+    vi.useFakeTimers();
+    const { tours } = setup();
+    await tours.start("welcome");
+    const heard = vi.fn();
+    tours.subscribe(heard);
+    await tours.next();
+    await flush(500);
+    expect(heard).toHaveBeenCalledTimes(1);
+    expect(tours.snapshot().waiting).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("turns true after a moment of waiting, keeps the step on screen, and false once the next is shown", async () => {
+    vi.useFakeTimers();
+    const { open, isAvailable } = slow();
+    const { tours } = setup(["member"], { isAvailable });
+    await tours.start("welcome");
+    const states: boolean[] = [];
+    tours.subscribe((s) => states.push(s.waiting));
+    const moving = tours.next();
+    await flush(99);
+    expect(tours.snapshot().waiting).toBe(false);
+    await flush(2);
+    expect(tours.snapshot()).toMatchObject({ waiting: true, step: { id: "card" } });
+    open(true);
+    await moving;
+    expect(tours.snapshot()).toMatchObject({ waiting: false, step: { id: "list" } });
+    expect(states).toEqual([true, false]);
+    vi.useRealTimers();
+  });
+
+  it("is false again once the tour is closed while waiting", async () => {
+    vi.useFakeTimers();
+    const { isAvailable } = slow();
+    const { tours } = setup(["member"], { isAvailable });
+    await tours.start("welcome");
+    void tours.next();
+    await flush(200);
+    expect(tours.snapshot().waiting).toBe(true);
+    await tours.close();
+    expect(tours.snapshot()).toMatchObject({ status: "idle", waiting: false });
+    await flush(500);
+    expect(tours.snapshot().status).toBe("idle");
+    vi.useRealTimers();
+  });
+});

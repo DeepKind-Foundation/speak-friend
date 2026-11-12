@@ -51,6 +51,8 @@ tours.subscribe((state) => render(state)); // current step, position, total
 - A tour dismissed twice (configurable) is no longer offered.
 - Raising a tour's `version` offers it again to users who finished an older one.
 - Steps can be omitted per user (`skipIf`) or when their target is not on the page (`isAvailable`).
+- `isAvailable(step, { navigated })` tells you when `navigate` was just called for the step's page, so the page on screen may still be the previous one. `speak-friend-react` uses it to avoid taking the old page's element for the new page's target. If you can, make `navigate` resolve once the new page has rendered.
+- `snapshot().waiting` is `true` when the next step has not been shown for 100 ms, because the page is changing or the target has not appeared. The step on screen stays until the next one is ready. In React the guide uses it; with your own UI you can show a waiting hint.
 - A step can set its own `timeout` in milliseconds, to wait less for a target that may be absent.
 - `progress(tourId)` returns what the engine last read from or wrote to the store, so a button can say "Continue" without waiting for the store. It is `null` until `offered()`, `start()` or `dismiss()` has run, and for progress of an older version of the tour. It does not follow changes made elsewhere, such as in another tab. `subscribeProgress` tells you when it changes; in React use `useTourProgress`.
 

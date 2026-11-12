@@ -7,4 +7,5 @@ export const labels: GuideLabels = {
   next: "Next",
   finish: "Finish",
   close: "Close",
+  waiting: "Waiting for the page",
 };

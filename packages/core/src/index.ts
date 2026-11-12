@@ -60,6 +60,16 @@ export interface Snapshot<C = unknown> {
   index: number;
   /** Number of steps that will be shown. */
   total: number;
+  /**
+   * True while a tour is running and the step it was asked to move to has not been shown for a noticeable moment
+   * (100 ms), because the page is still changing or the target has not appeared. `step` is still the one on screen.
+   */
+  waiting: boolean;
+}
+
+/** What the engine knows about the moment a step is checked. */
+export interface AvailabilityInfo {
+  navigated: boolean;
 }
 
 export interface Options<C> {
@@ -68,8 +78,11 @@ export interface Options<C> {
   context: C;
   /** Called when the next step is on a different page. */
   navigate?: (route: string) => void | Promise<void>;
-  /** Whether the target is on the page; unavailable steps are skipped. May wait for rendering. */
-  isAvailable?: (step: Step<C>) => boolean | Promise<boolean>;
+  /**
+   * Whether the target is on the page; unavailable steps are skipped. May wait for rendering. `navigated` is true
+   * when `navigate` was just called for this step's page, so the page on screen may still be the previous one.
+   */
+  isAvailable?: (step: Step<C>, info: AvailabilityInfo) => boolean | Promise<boolean>;
   /** Dismissals after which a tour is no longer offered. Default 2. */
   maxDismissals?: number;
 }
@@ -108,7 +121,10 @@ export function memoryStore(initial: Record<string, Progress> = {}): ProgressSto
 
 type Place<C> = { chapterIndex: number; stepIndex: number; chapter: Chapter<C>; step: Step<C> };
 
-const IDLE = { status: "idle", tourId: null, chapter: null, step: null, index: 0, total: 0 } as const;
+/** How long a step change may take before the snapshot says it is waiting, so quick changes do not flash. */
+const WAITING_AFTER = 100;
+
+const IDLE = { status: "idle", tourId: null, chapter: null, step: null, index: 0, total: 0, waiting: false } as const;
 
 export function createTours<C>(options: Options<C>): Tours<C> {
   const { tours, store, context, navigate, isAvailable, maxDismissals = 2 } = options;
@@ -178,10 +194,18 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     let i = from;
     while (i >= 0 && i < places.length) {
       const place = places[i]!;
-      const previous = current.chapter;
-      if (previous?.id !== place.chapter.id) await navigate?.(place.chapter.route);
-      if (run !== epoch) return;
-      const available = !isAvailable || (await isAvailable(place.step));
+      // The step on screen stays until the next one is ready; if that takes a while, say so.
+      const notice = setTimeout(() => {
+        if (run === epoch && current.status === "running" && !current.waiting) publish({ ...current, waiting: true });
+      }, WAITING_AFTER);
+      const navigated = current.chapter?.id !== place.chapter.id;
+      let available: boolean;
+      try {
+        if (navigated) await navigate?.(place.chapter.route);
+        available = run === epoch && (!isAvailable || (await isAvailable(place.step, { navigated })));
+      } finally {
+        clearTimeout(notice);
+      }
       if (run !== epoch) return;
       if (available) {
         shown = true;
@@ -192,6 +216,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
           step: place.step,
           index: i,
           total: places.length,
+          waiting: false,
         });
         await save(
           tour,

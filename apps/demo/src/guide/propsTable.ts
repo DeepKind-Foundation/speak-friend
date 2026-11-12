@@ -11,7 +11,7 @@ export const guideProps: readonly PropRow[] = [
     name: "labels",
     defaultValue: "required",
     description:
-      "Every string the guide shows: counter, back, next, finish and close. Optionally waiting, for a step that is taking a moment, the first one included.",
+      "Every string the guide shows: counter, back, next, finish and close. Optionally waiting, for a step that is taking a moment (the first one included), and ended, announced when the tour ends.",
   },
   {
     name: "position",

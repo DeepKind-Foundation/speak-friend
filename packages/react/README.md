@@ -41,7 +41,8 @@ await tours.start("welcome");
 - `dim` is off by default. Turn it on and the page around the ring gets a light tint. It is only a tint: clicks, focus and the keyboard are not affected and nothing is made inert. It is left out when the person asks for more contrast (`prefers-contrast: more`) or less transparency (`prefers-reduced-transparency`), and in forced-colors mode, where the ring remains. Change the strength with `--sf-dim`.
 - The guide is non-modal: it is a `role="dialog"` without `aria-modal`, nothing traps focus, and Tab leaves it after its last button and continues into the page.
 - `theme` overrides the system setting in both directions: `theme="dark"` stays dark on a light system and `theme="light"` stays light on a dark one.
-- Focus moves to the step title on every step. `announce="live"` keeps focus and announces the step instead.
+- Focus moves to the step title on every step, and the title is described by "Step N of M", so both are read together. `announce="live"` keeps focus and announces the step instead.
+- One polite live region stays in the page for as long as the guide is mounted, empty until something is said, so what goes into it is announced as a change. It carries the step (with `announce="live"`), the waiting hint, and `labels.ended` when the tour ends, whatever the reason. Nothing is announced at the end without `labels.ended`.
 - Every way a tour can end (Escape, the close button, finishing, `close()` from your code, the last targets disappearing, the guide unmounting) returns focus to where it was. Starting again resumes from the same step. If that element is no longer on the page, focus goes to `fallbackFocus`, then the first `h1`, then `main`.
 - A step whose target is not on the page is skipped and leaves the count.
 - A target larger than the window is scrolled to its top and ringed where it can be seen. The ring is clipped to the window, with room for its outline, and is not drawn while none of the target is on screen. Small targets work best on phones, where the guide covers the lower part of the screen.
@@ -53,14 +54,18 @@ await tours.start("welcome");
 
 ## Reading progress
 
-`useTourProgress(tourId)` returns the saved progress the engine last read or wrote, or `null`, and re-renders when it changes. Call `offered()` once when the page opens to load it.
+`useTourProgress(tourId)` returns the saved progress the engine last read or wrote, or `null`, and re-renders when it changes. Call `offered()` once when the page opens to load it. Until it has, `null` does not mean the person has not started: `useTourProgressLoaded(tourId)` is `false` until the store has answered (even if it failed), so show nothing or a neutral button instead of flashing "Start" and then "Continue".
 
 ```tsx
 const tours = useTours();
 const progress = useTourProgress("welcome");
+const loaded = useTourProgressLoaded("welcome");
 useEffect(() => void tours.offered(), [tours]);
+if (!loaded) return null;
 return <button onClick={() => tours.start("welcome")}>{progress?.status === "started" ? "Continue" : "Start"}</button>;
 ```
+
+If the store cannot be read or saved, the tour still runs and `onError` is called. For `localStorage` use `webStorageStore()` from `speak-friend`, which keeps progress in memory when the browser refuses to store it.
 
 ## Props of `TourProvider`
 
@@ -69,7 +74,7 @@ return <button onClick={() => tours.start("welcome")}>{progress?.status === "sta
 | Prop            | Default         | Description                                                                                     |
 | --------------- | --------------- | ----------------------------------------------------------------------------------------------- |
 | `targetTimeout` | `1500`          | Milliseconds to wait for a step's target before skipping the step. A step's own `timeout` wins. |
-| `onError`       | `console.error` | Called when a step change fails, for example when the store rejects.                            |
+| `onError`       | `console.error` | Called when a step change fails or the store cannot be read or saved.                           |
 
 ## Props of `TourGuide`
 

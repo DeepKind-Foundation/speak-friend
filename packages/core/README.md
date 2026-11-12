@@ -35,6 +35,9 @@ tours.subscribe((state) => render(state)); // current step, position, total
 - Steps can be omitted per user (`skipIf`) or when their target is not on the page (`isAvailable`).
 - `isAvailable(step, { navigated })` tells you when `navigate` was just called for the step's page, so the page on screen may still be the previous one. `speak-friend-react` uses it to avoid taking the old page's element for the new page's target. If you can, make `navigate` resolve once the new page has rendered.
 - `snapshot().waiting` is `true` when the next step has not been shown for 100 ms, because the page is changing or the target has not appeared. The step on screen stays until the next one is ready; when it is the first step, `status` is `running` and `step` is `null` until it is. In React the guide uses it; with your own UI you can show a waiting hint.
+- Resuming looks for the saved step by its id first, then by its saved position, so adding or removing steps does not move the person. Anything that comes back from the store and is not progress is ignored.
+- A store that throws does not stop a tour: `onError` is called and the tour runs without persistence. `webStorageStore()` keeps progress in `localStorage` and falls back to memory for the session when the browser refuses.
+- `progressLoaded(tourId)` is `false` until the store has been asked (`offered()`, `start()` or `dismiss()`), so a button can wait instead of showing "Start" and then "Continue".
 - The library has no text of its own; the app supplies every string.
 
 Licence: MIT.

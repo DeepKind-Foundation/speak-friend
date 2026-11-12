@@ -1,5 +1,5 @@
 /** Creates the tour controller and shares it with the components below. `useTourProgress` reads saved progress. */
-export { TourProvider, useTours, useTourState, useTourProgress } from "./provider.js";
+export { TourProvider, useTours, useTourState, useTourProgress, useTourProgressLoaded } from "./provider.js";
 /** Props of `TourProvider`. */
 export type { TourProviderProps } from "./provider.js";
 /** The docked guide with its highlight ring; renders only while a tour is running. */

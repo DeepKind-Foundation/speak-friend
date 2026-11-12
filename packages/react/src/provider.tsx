@@ -15,7 +15,7 @@ export interface TourProviderProps<C> extends Omit<Options<C>, "isAvailable"> {
   children: ReactNode;
   /** How long to wait for a step's target to appear before skipping the step, in ms. A step's own `timeout` wins. Default 1500. */
   targetTimeout?: number;
-  /** Called when a step change fails, for example when the progress store rejects. Default `console.error`. */
+  /** Called when a step change fails or the progress store cannot be read or saved. Default `console.error`. */
   onError?: (error: unknown) => void;
 }
 
@@ -43,6 +43,7 @@ export function TourProvider<C>({
         context,
         navigate: go,
         maxDismissals,
+        onError,
         isAvailable: (step, { navigated }) => {
           const stale = navigated ? before : undefined;
           if (!navigated) before = undefined;
@@ -88,5 +89,18 @@ export function useTourProgress(tourId: string): Progress | null {
     (notify) => t.subscribeProgress(notify),
     () => t.progress(tourId),
     () => null,
+  );
+}
+
+/**
+ * Whether the store has been asked about a tour yet. While it is false, `useTourProgress` returning null does not mean
+ * the person has not started, so show nothing or a neutral button instead of "Start". Call `offered()` to load it.
+ */
+export function useTourProgressLoaded(tourId: string): boolean {
+  const t = useTours();
+  return useSyncExternalStore(
+    (notify) => t.subscribeProgress(notify),
+    () => t.progressLoaded(tourId),
+    () => false,
   );
 }

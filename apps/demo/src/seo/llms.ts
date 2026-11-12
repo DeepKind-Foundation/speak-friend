@@ -17,7 +17,7 @@ ${quickStart.install}
 - A step points at an element with a data-tour attribute. If a name is used twice, the first visible element wins.
 - The library has no text of its own: the labels prop supplies every string, in any language.
 - The guide is a non-modal dialog docked to the window. Focus moves to the step title, Escape closes it and returns focus to the opener, and it follows the page direction, so it mirrors in right-to-left layouts.
-- Progress is saved through a store you provide. memoryStore is included.
+- Progress is saved through a store you provide. memoryStore and webStorageStore (localStorage, falling back to memory when the browser refuses) are included. A store that fails does not stop the tour.
 - Both packages are ESM only.
 
 ## Example

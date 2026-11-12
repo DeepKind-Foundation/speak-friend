@@ -1,4 +1,13 @@
-import { createElement, useEffect, useId, useLayoutEffect, useRef, useSyncExternalStore, type JSX } from "react";
+import {
+  createElement,
+  type JSX,
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { createPortal } from "react-dom";
 import { useDock } from "./dock.js";
 import { restoreFocus } from "./focus.js";
@@ -17,6 +26,8 @@ export interface GuideLabels {
   close: string;
   /** Shown while the next step is taking a moment, for example `Waiting for the page`. Optional. */
   waiting?: string;
+  /** Announced when the tour ends, whatever the reason, for example "Tour closed". Nothing is announced without it. */
+  ended?: string;
 }
 
 export interface TourGuideProps {
@@ -78,6 +89,8 @@ export function TourGuide({
   const titleRef = useRef<HTMLElement>(null);
   const guideRef = useRef<HTMLElement>(null);
   const opener = useRef<Element | null>(null);
+  const region = useRef<HTMLDivElement>(null);
+  const wasActive = useRef(false);
   const fallback = useRef(fallbackFocus);
   // False on the server and during hydration, true afterwards: the guide only exists in the browser.
   const mounted = useSyncExternalStore(
@@ -106,6 +119,32 @@ export function TourGuide({
 
   useLayoutEffect(() => {
     if (running && announce === "focus") titleRef.current?.focus({ preventScroll: true });
+  }, [running, stepId, announce]);
+
+  // One live region that stays in the page for as long as the guide is mounted, so what is put in it is announced as a
+  // change. A region that appears together with its text is often not announced.
+  const say = useCallback((text: string): void => {
+    if (region.current && text) region.current.textContent = text;
+  }, []);
+
+  useEffect(() => {
+    if (active && !wasActive.current && region.current) region.current.textContent = "";
+    if (!active && wasActive.current && labels.ended) say(labels.ended);
+    wasActive.current = active;
+  }, [active, labels.ended, say]);
+
+  useEffect(() => {
+    const el = region.current;
+    if (state.waiting && labels.waiting) say(labels.waiting);
+    // Take the hint back once the wait is over, so it does not linger as the last thing said.
+    else if (el && labels.waiting && (el.textContent ?? "") === labels.waiting) el.textContent = "";
+  }, [state.waiting, labels.waiting, say]);
+
+  useEffect(() => {
+    if (running && announce === "live" && state.step)
+      say(`${labels.counter(state.index + 1, state.total)}: ${state.step.title}`);
+    // The text depends on the step only; `labels` and `say` are not what makes a new announcement.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, stepId, announce]);
 
   const dock = useDock(guideRef, state.step?.target, position, running);
@@ -161,31 +200,43 @@ export function TourGuide({
     return () => document.removeEventListener("keydown", onKey);
   }, [active, closeOnEscape, tours, run]);
 
-  if (!mounted || !active) return null;
+  if (!mounted) return null;
   const host = container?.() ?? document.body;
   const { step, index, total } = state;
+  const announcer = createPortal(
+    <div ref={region} className="sf-visually-hidden" role="status" aria-live="polite" aria-atomic="true" />,
+    host,
+  );
+  // The announcer is always the first child, so it is never remounted while the guide comes and goes.
+  if (!active) return <>{announcer}</>;
   if (!step) {
     // The first step is not on the page yet. Say so once the wait is noticeable, and let the person give up.
-    if (!state.waiting || !labels.waiting) return null;
-    return createPortal(
-      <section
-        role="status"
-        aria-busy="true"
-        className={className ? `sf-guide sf-starting ${className}` : "sf-guide sf-starting"}
-        data-position={position}
-        data-edge="bottom"
-        data-theme={theme}
-      >
-        <div className="sf-body">
-          <p className="sf-waiting">{labels.waiting}</p>
-          <div className="sf-actions">
-            <button type="button" className="sf-button sf-quiet" onClick={() => run(tours.close())}>
-              {labels.close}
-            </button>
-          </div>
-        </div>
-      </section>,
-      host,
+    if (!state.waiting || !labels.waiting) return <>{announcer}</>;
+    return (
+      <>
+        {announcer}
+        {createPortal(
+          <section
+            role="group"
+            aria-label={labels.waiting}
+            aria-busy="true"
+            className={className ? `sf-guide sf-starting ${className}` : "sf-guide sf-starting"}
+            data-position={position}
+            data-edge="bottom"
+            data-theme={theme}
+          >
+            <div className="sf-body">
+              <p className="sf-waiting">{labels.waiting}</p>
+              <div className="sf-actions">
+                <button type="button" className="sf-button sf-quiet" onClick={() => run(tours.close())}>
+                  {labels.close}
+                </button>
+              </div>
+            </div>
+          </section>,
+          host,
+        )}
+      </>
     );
   }
   const last = index === total - 1;
@@ -193,6 +244,7 @@ export function TourGuide({
 
   return (
     <>
+      {announcer}
       <Ring key={step.id} target={step.target} theme={theme} dim={dim} container={host} />
       {createPortal(
         <section
@@ -206,7 +258,9 @@ export function TourGuide({
           data-theme={theme}
         >
           <div className="sf-band">
-            <span className="sf-count">{counter}</span>
+            <span className="sf-count" id={`${id}-count`}>
+              {counter}
+            </span>
             <span className="sf-progress" aria-hidden="true">
               {Array.from({ length: total }, (_, i) => (
                 <i key={i} className={i < index ? "sf-done" : i === index ? "sf-current" : undefined} />
@@ -214,13 +268,13 @@ export function TourGuide({
             </span>
           </div>
           <div className="sf-body">
-            {createElement(`h${headingLevel}`, { id, ref: titleRef, tabIndex: -1, className: "sf-title" }, step.title)}
-            <p className="sf-text">{step.body}</p>
-            {labels.waiting && (
-              <p className="sf-waiting" role="status">
-                {state.waiting ? labels.waiting : ""}
-              </p>
+            {createElement(
+              `h${headingLevel}`,
+              { id, ref: titleRef, tabIndex: -1, className: "sf-title", "aria-describedby": `${id}-count` },
+              step.title,
             )}
+            <p className="sf-text">{step.body}</p>
+            {labels.waiting && <p className="sf-waiting">{state.waiting ? labels.waiting : ""}</p>}
             <div className="sf-actions">
               <button type="button" className="sf-button" onClick={() => run(tours.back())} disabled={index === 0}>
                 {labels.back}
@@ -233,11 +287,6 @@ export function TourGuide({
               </button>
             </div>
           </div>
-          {announce === "live" && (
-            <div className="sf-visually-hidden" role="status">
-              {`${counter}: ${step.title}`}
-            </div>
-          )}
         </section>,
         host,
       )}

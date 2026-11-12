@@ -73,7 +73,8 @@ describe("WorkbenchPage", () => {
     expect(document.querySelector(".stage-screen")?.contains(dialog)).toBe(true);
     expect(dialog.getAttribute("data-position")).toBe("start");
     expect(dialog.getAttribute("data-theme")).toBe("dark");
-    expect(dialog.querySelector('[role="status"]')).not.toBeNull();
+    const frame = document.querySelector(".stage-screen");
+    expect(frame?.querySelector('[role="status"]')?.textContent).toBe("Step 1 of 3: Add a task");
     await act(async () => {
       fireEvent.click(within(dialog).getByRole("button", { name: "Next" }));
     });

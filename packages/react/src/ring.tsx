@@ -1,6 +1,6 @@
 import { useEffect, useState, type JSX } from "react";
 import { createPortal } from "react-dom";
-import { findTarget } from "./wait-for-target.js";
+import { lookup, useStableWithin, type Within } from "./scope.js";
 
 /** The outline, its offset and the halo reach about 7px outside the box, so the box stays this far from the window edge. */
 const INSET = 8;
@@ -19,15 +19,27 @@ interface Box {
  * never left on a detached element. The ring is clipped to the window, with room for its outline, so a target larger
  * than the window is ringed where it can be seen, and nothing is drawn while none of it is on screen.
  */
-function useBox(target: string): Box | null {
+function useBox(target: string, within: Within | undefined): Box | null {
   const [box, setBox] = useState<Box | null>(null);
+  const scope = useStableWithin(within);
   useEffect(() => {
     let frame = 0;
     let observed: HTMLElement | null = null;
+    // Shadow roots the target is searched in. Scrolling and changes inside them do not reach the page, so they are
+    // listened to as well.
+    const roots = new Set<ShadowRoot>();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => schedule());
+    const mutations = new MutationObserver(() => schedule());
     const measure = (): void => {
       frame = 0;
-      const el = findTarget(target);
+      const found = lookup(target, scope);
+      const el = found.el;
+      for (const root of found.roots) {
+        if (roots.has(root)) continue;
+        roots.add(root);
+        root.addEventListener("scroll", schedule, { capture: true, passive: true });
+        mutations.observe(root, { childList: true, subtree: true, attributes: true });
+      }
       if (el !== observed) {
         if (observed) observer?.unobserve(observed);
         if (el) observer?.observe(el);
@@ -59,32 +71,35 @@ function useBox(target: string): Box | null {
     window.addEventListener("scroll", schedule, { capture: true, passive: true });
     window.addEventListener("resize", schedule);
     observer?.observe(document.body);
-    const mutations = new MutationObserver(schedule);
     mutations.observe(document.body, { childList: true, subtree: true, attributes: true });
     return () => {
       window.removeEventListener("scroll", schedule, { capture: true });
       window.removeEventListener("resize", schedule);
       observer?.disconnect();
       mutations.disconnect();
+      roots.forEach((root) => root.removeEventListener("scroll", schedule, { capture: true }));
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [target]);
+  }, [target, scope]);
   return box;
 }
 
 /** A ring around the element marked `data-tour="<target>"`. It never blocks pointer events. */
 export function Ring({
   target,
+  within,
   theme,
   dim,
   container,
 }: {
   target: string;
+  /** Look only inside the open shadow tree of this host, or path of hosts. See `Step.within`. */
+  within?: Within;
   theme?: "light" | "dark";
   dim: boolean;
   container: HTMLElement;
 }): JSX.Element | null {
-  const box = useBox(target);
+  const box = useBox(target, within);
   if (!box || typeof document === "undefined") return null;
   return createPortal(
     <div

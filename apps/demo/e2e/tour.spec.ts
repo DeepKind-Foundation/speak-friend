@@ -41,6 +41,9 @@ test("the page stays usable: Tab reaches page controls and the guide never cover
   page,
 }) => {
   await open(page);
+  // The page scrolls smoothly to the first target; measure only once it has stopped moving.
+  await page.waitForFunction(() => document.getAnimations().length === 0);
+  await page.waitForTimeout(700);
   await page.locator(".wordmark").focus();
   const covered: string[] = [];
   for (let i = 0; i < 40; i++) {

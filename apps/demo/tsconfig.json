@@ -10,5 +10,5 @@
       "speak-friend-react": ["../../packages/react/src/index.ts"]
     }
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "e2e/fixtures"]
 }

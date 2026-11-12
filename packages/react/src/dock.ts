@@ -1,6 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import { chooseDock, type Dock, type Side } from "./placement.js";
-import { findTarget } from "./wait-for-target.js";
+import { lookup, useStableWithin, type Within } from "./scope.js";
 
 /** Room kept around the target for its ring, in px. */
 const RING_MARGIN = 8;
@@ -14,10 +14,12 @@ const SCROLL_WAIT = 600;
 export function useDock(
   guide: RefObject<HTMLElement | null>,
   target: string | undefined,
+  within: Within | undefined,
   position: Side,
   running: boolean,
 ): Dock | null {
   const [dock, setDock] = useState<Dock | null>(null);
+  const scope = useStableWithin(within);
 
   // Each tour starts from the app's own choice again.
   useEffect(() => () => setDock(null), [running]);
@@ -26,7 +28,7 @@ export function useDock(
     const el = guide.current;
     if (!running || !target || !el) return;
     const place = (): void => {
-      const found = findTarget(target);
+      const found = lookup(target, scope).el;
       if (!found) return;
       const style = getComputedStyle(el);
       const next = chooseDock({
@@ -43,18 +45,23 @@ export function useDock(
     // Smooth scrolling takes a while: measure when it ends, or after a fixed wait where `scrollend` does not exist.
     const settle = (): void => {
       window.removeEventListener("scrollend", settle);
+      roots.forEach((root) => root.removeEventListener("scrollend", settle, { capture: true }));
       clearTimeout(timer);
       place();
     };
     const timer = setTimeout(settle, SCROLL_WAIT);
+    // `scrollend` does not leave a shadow tree, so the roots the target is in are listened to as well.
+    const roots = lookup(target, scope).roots;
+    roots.forEach((root) => root.addEventListener("scrollend", settle, { capture: true }));
     window.addEventListener("scrollend", settle);
     window.addEventListener("resize", place);
     return () => {
       clearTimeout(timer);
       window.removeEventListener("scrollend", settle);
+      roots.forEach((root) => root.removeEventListener("scrollend", settle, { capture: true }));
       window.removeEventListener("resize", place);
     };
-  }, [guide, running, target, position]);
+  }, [guide, running, target, scope, position]);
 
   return dock;
 }

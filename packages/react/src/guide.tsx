@@ -12,7 +12,8 @@ import { createPortal } from "react-dom";
 import { useDock } from "./dock.js";
 import { restoreFocus } from "./focus.js";
 import { Ring } from "./ring.js";
-import { useRun, useTourState, useTours } from "./provider.js";
+import { useRun, useScoped, useTourState, useTours } from "./provider.js";
+import { deepActiveElement } from "./scope.js";
 import { findTarget } from "./wait-for-target.js";
 
 /** Every string the guide shows. The library has no text of its own. */
@@ -85,6 +86,7 @@ export function TourGuide({
   const tours = useTours();
   const run = useRun();
   const state = useTourState();
+  const scoped = useScoped();
   const id = useId();
   const titleRef = useRef<HTMLElement>(null);
   const guideRef = useRef<HTMLElement>(null);
@@ -110,12 +112,12 @@ export function TourGuide({
   // Remember where focus was when the tour started and give it back when the tour ends.
   useLayoutEffect(() => {
     if (!active) return;
-    opener.current = document.activeElement;
+    opener.current = scoped ? deepActiveElement() : document.activeElement;
     return () => {
       restoreFocus(opener.current, fallback.current);
       opener.current = null;
     };
-  }, [active]);
+  }, [active, scoped]);
 
   useLayoutEffect(() => {
     if (running && announce === "focus") titleRef.current?.focus({ preventScroll: true });
@@ -147,7 +149,7 @@ export function TourGuide({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, stepId, announce]);
 
-  const dock = useDock(guideRef, state.step?.target, position, running);
+  const dock = useDock(guideRef, state.step?.target, state.step?.within, position, running);
   const edge = dock?.edge ?? "bottom";
 
   // Keep focused elements clear of the dock (WCAG 2.4.11). Scroll padding moves them out from under it. At the bottom
@@ -183,7 +185,7 @@ export function TourGuide({
 
   useEffect(() => {
     if (!running || !state.step) return;
-    const el = findTarget(state.step.target);
+    const el = findTarget(state.step.target, state.step.within);
     if (!el) return;
     // A target taller than what the guide leaves free cannot be centred, so its top is brought into view instead.
     const free = window.innerHeight - (guideRef.current?.offsetHeight ?? 0) - CLEARANCE;
@@ -245,7 +247,7 @@ export function TourGuide({
   return (
     <>
       {announcer}
-      <Ring key={step.id} target={step.target} theme={theme} dim={dim} container={host} />
+      <Ring key={step.id} target={step.target} within={step.within} theme={theme} dim={dim} container={host} />
       {createPortal(
         <section
           ref={guideRef}

@@ -29,7 +29,7 @@ ${quickStart.code}
 ## Links
 
 - [Guide and quick start](${pageUrl("guide")}): what it does, the example above and the props of the guide
-- [Workbench](${pageUrl("workbench")}): try every option and see the code each choice produces
+- [Workbench](${pageUrl("workbench")}): try every option in a sample app and copy the complete code for your choices
 - [speak-friend on npm](${NPM.engine}): the engine
 - [speak-friend-react on npm](${NPM.react}): the guide for React
 - [Source and README](${REPO}#readme)

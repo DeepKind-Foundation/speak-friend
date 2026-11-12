@@ -27,7 +27,7 @@ export const PAGES = {
     path: "/workbench/",
     title: "React tour guide workbench | Speak, Friend",
     description:
-      "Change the tour guide's position, theme, announce mode and colours, try a right-to-left page, and see the code and what a screen reader says.",
+      "Try the tour guide in a sample app: dock side, theme, dimming, colours and a right-to-left page. Copy the complete code for your choices.",
   },
 } as const satisfies Record<string, PageMeta>;
 

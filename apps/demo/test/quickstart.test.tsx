@@ -44,7 +44,7 @@ describe("server rendering", () => {
     expect(guide).toContain("pnpm");
     expect(guide).not.toContain('role="dialog"');
     const workbench = renderToString(<WorkbenchPage />);
-    expect(workbench).toContain("Customise the guide");
+    expect(workbench).toContain("Try the guide, then copy the code");
     expect(workbench).toContain("TourGuide");
   });
 });

@@ -47,7 +47,9 @@ await tours.start("welcome");
 - A target larger than the window is scrolled to its top and ringed where it can be seen. The ring is clipped to the window, with room for its outline, and is not drawn while none of the target is on screen. Small targets work best on phones, where the guide covers the lower part of the screen.
 - While the guide is open, `scroll-padding-bottom` and extra padding at the end of the page keep focused elements clear of it, including the last ones on the page.
 - A page that opens a modal `<dialog>` with `showModal()` makes everything outside it unreachable, the guide included. Pass `container={() => document.querySelector("dialog[open]")}` and the guide and ring mount inside it. A page that only sets `inert` on its own root is fine: the guide sits next to the root.
-- Name a target once per page. A name used on two pages can match the old page's element while the route changes, so a step can be shown before the new page has rendered. The ring looks its target up again on every layout change, so it follows the new element when one with that name appears.
+- A target name can be used on more than one page. After `navigate`, an element that was already on the page counts as the target only once the page has stopped changing for 300 ms; a new element counts at once. So the old page's copy is not taken for the new page's, and an element that really stays, such as a header, is found after a short pause. If your route takes longer to render than that, make `navigate` return a promise that resolves when the new page is on screen.
+- While the next step takes a moment (100 ms or more), the guide stays on the current step, is marked `aria-busy`, and shows `labels.waiting` in a live region if you gave one.
+- The guide keeps clear of the element it points at. Once the page has scrolled to it, a guide that would cover it moves to the other side, then to the top edge; if nothing is clear it stays where you put it. The ring follows the element on every layout change.
 
 ## Reading progress
 
@@ -73,7 +75,7 @@ return <button onClick={() => tours.start("welcome")}>{progress?.status === "sta
 
 | Prop            | Default  | Description                                                                                                        |
 | --------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
-| `labels`        | required | Every string: `counter`, `back`, `next`, `finish`, `close`.                                                        |
+| `labels`        | required | Every string: `counter`, `back`, `next`, `finish`, `close`, and optionally `waiting`.                              |
 | `position`      | `end`    | `start` or `end`.                                                                                                  |
 | `theme`         |          | `light` or `dark` forces a theme. Default: follows the OS.                                                         |
 | `headingLevel`  | `2`      | Heading level of the step title.                                                                                   |

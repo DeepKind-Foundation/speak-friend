@@ -1,5 +1,6 @@
 import { createElement, useEffect, useId, useLayoutEffect, useRef, useSyncExternalStore, type JSX } from "react";
 import { createPortal } from "react-dom";
+import { useDock } from "./dock.js";
 import { restoreFocus } from "./focus.js";
 import { Ring } from "./ring.js";
 import { useRun, useTourState, useTours } from "./provider.js";
@@ -14,6 +15,8 @@ export interface GuideLabels {
   /** Label of the next button on the last step. */
   finish: string;
   close: string;
+  /** Shown while the next step is taking a moment, for example `Waiting for the page`. Optional. */
+  waiting?: string;
 }
 
 export interface TourGuideProps {
@@ -103,6 +106,40 @@ export function TourGuide({
     if (running && announce === "focus") titleRef.current?.focus({ preventScroll: true });
   }, [running, stepId, announce]);
 
+  const dock = useDock(guideRef, state.step?.target, position, running);
+  const edge = dock?.edge ?? "bottom";
+
+  // Keep focused elements clear of the dock (WCAG 2.4.11). Scroll padding moves them out from under it. At the bottom
+  // the page also gets padding at its end, so the last elements have room to move into. This runs before the scroll
+  // to the target below, so the very first step is placed with it in effect.
+  useEffect(() => {
+    const guide = guideRef.current;
+    if (!running || !guide) return;
+    const root = document.documentElement;
+    const own = parseFloat(getComputedStyle(root).paddingBottom) || 0;
+    const properties =
+      edge === "top" ? (["scroll-padding-top"] as const) : (["scroll-padding-bottom", "padding-bottom"] as const);
+    const restore = properties.map((name) => {
+      const before = root.style.getPropertyValue(name);
+      return () => (before ? root.style.setProperty(name, before) : root.style.removeProperty(name));
+    });
+    const apply = (): void => {
+      const room = guide.offsetHeight + CLEARANCE;
+      if (edge === "top") root.style.setProperty("scroll-padding-top", `${room}px`);
+      else {
+        root.style.setProperty("scroll-padding-bottom", `${room}px`);
+        root.style.setProperty("padding-bottom", `${own + room}px`);
+      }
+    };
+    apply();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(apply);
+    observer?.observe(guide);
+    return () => {
+      observer?.disconnect();
+      restore.forEach((undo) => undo());
+    };
+  }, [running, edge]);
+
   useEffect(() => {
     if (!running || !state.step) return;
     const el = findTarget(state.step.target);
@@ -112,31 +149,6 @@ export function TourGuide({
     const tall = el.getBoundingClientRect().height > free;
     el.scrollIntoView({ block: tall ? "start" : "center", behavior: reducedMotion() ? "auto" : "smooth" });
   }, [running, state.step]);
-
-  // Keep focused elements clear of the dock (WCAG 2.4.11). Scroll padding moves them out from under it; the extra
-  // padding at the end of the page gives the last ones room to move into.
-  useEffect(() => {
-    const guide = guideRef.current;
-    if (!running || !guide) return;
-    const root = document.documentElement;
-    const own = parseFloat(getComputedStyle(root).paddingBottom) || 0;
-    const restore = (["scroll-padding-bottom", "padding-bottom"] as const).map((name) => {
-      const before = root.style.getPropertyValue(name);
-      return () => (before ? root.style.setProperty(name, before) : root.style.removeProperty(name));
-    });
-    const apply = (): void => {
-      const room = guide.offsetHeight + CLEARANCE;
-      root.style.setProperty("scroll-padding-bottom", `${room}px`);
-      root.style.setProperty("padding-bottom", `${own + room}px`);
-    };
-    apply();
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(apply);
-    observer?.observe(guide);
-    return () => {
-      observer?.disconnect();
-      restore.forEach((undo) => undo());
-    };
-  }, [running]);
 
   useEffect(() => {
     if (!running || !closeOnEscape) return;
@@ -162,7 +174,9 @@ export function TourGuide({
           role="dialog"
           aria-labelledby={id}
           className={className ? `sf-guide ${className}` : "sf-guide"}
-          data-position={position}
+          aria-busy={state.waiting || undefined}
+          data-position={dock?.side ?? position}
+          data-edge={edge}
           data-theme={theme}
         >
           <div className="sf-band">
@@ -176,6 +190,11 @@ export function TourGuide({
           <div className="sf-body">
             {createElement(`h${headingLevel}`, { id, ref: titleRef, tabIndex: -1, className: "sf-title" }, step.title)}
             <p className="sf-text">{step.body}</p>
+            {labels.waiting && (
+              <p className="sf-waiting" role="status">
+                {state.waiting ? labels.waiting : ""}
+              </p>
+            )}
             <div className="sf-actions">
               <button type="button" className="sf-button" onClick={() => run(tours.back())} disabled={index === 0}>
                 {labels.back}

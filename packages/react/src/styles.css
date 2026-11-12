@@ -81,7 +81,18 @@
   inset-inline-start: var(--sf-gap, 16px);
 }
 
+/* Docked at the top when the target sits under the bottom dock. */
+.sf-guide[data-edge="top"] {
+  inset-block-start: var(--sf-gap, 16px);
+  inset-block-end: auto;
+}
+
 @media (max-width: 640px) {
+  /* The attribute selector keeps this above the data-position rules, which set one inline side. */
+  .sf-guide[data-position] {
+    inset-inline: 0;
+  }
+
   .sf-guide {
     inset-inline: 0;
     inset-block-end: 0;
@@ -90,6 +101,14 @@
     padding-block-end: env(safe-area-inset-bottom, 0px);
     border-width: 2px 0 0;
     border-radius: 16px 16px 0 0;
+  }
+
+  .sf-guide[data-edge="top"] {
+    inset-block-start: 0;
+    inset-block-end: auto;
+    padding-block: env(safe-area-inset-top, 0px) 0;
+    border-width: 0 0 2px;
+    border-radius: 0 0 16px 16px;
   }
 }
 
@@ -154,6 +173,18 @@
   margin: 0 0 12px;
   font-size: 0.9rem;
   line-height: 1.5;
+}
+
+.sf-waiting {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--sf-ink);
+  opacity: 0.8;
+}
+
+.sf-waiting:empty {
+  display: none;
 }
 
 .sf-actions {

@@ -27,20 +27,31 @@ export function TourProvider<C>({
   ...options
 }: TourProviderProps<C>): JSX.Element {
   const { tours, store, context, navigate, maxDismissals } = options;
-  const value = useMemo<TourContextValue>(
-    () => ({
+  const value = useMemo<TourContextValue>(() => {
+    // The elements on the page when a navigation started. Some may be the old page's copy of a target.
+    let before: ReadonlySet<Element> | undefined;
+    const go = navigate
+      ? async (route: string): Promise<void> => {
+          before = typeof document === "undefined" ? undefined : new Set(document.querySelectorAll("[data-tour]"));
+          await navigate(route);
+        }
+      : undefined;
+    return {
       tours: createTours<C>({
         tours,
         store,
         context,
-        navigate,
+        navigate: go,
         maxDismissals,
-        isAvailable: (step) => waitForTarget(step.target, step.timeout ?? targetTimeout),
+        isAvailable: (step, { navigated }) => {
+          const stale = navigated ? before : undefined;
+          if (!navigated) before = undefined;
+          return waitForTarget(step.target, step.timeout ?? targetTimeout, { stale });
+        },
       }) as unknown as Tours<never>,
       onError,
-    }),
-    [tours, store, context, navigate, maxDismissals, targetTimeout, onError],
-  );
+    };
+  }, [tours, store, context, navigate, maxDismissals, targetTimeout, onError]);
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
 }
 

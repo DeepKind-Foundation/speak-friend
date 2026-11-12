@@ -118,3 +118,50 @@ test.describe("dimming", () => {
     expect(await shadows(page)).toBeLessThan(2);
   });
 });
+
+/** True when the guide and the ring around the first target overlap. */
+const overlap = (page: Page): Promise<boolean> =>
+  page.evaluate(() => {
+    const ring = document.querySelector(".sf-ring")?.getBoundingClientRect();
+    const dock = document.querySelector(".sf-guide")?.getBoundingClientRect();
+    if (!ring || !dock) return true;
+    return ring.left < dock.right && ring.right > dock.left && ring.top < dock.bottom && ring.bottom > dock.top;
+  });
+
+const pinFirstTarget = async (page: Page, css: string): Promise<void> => {
+  await page.goto("/");
+  await page.addStyleTag({
+    content: `[data-tour^="ledger-"]:first-of-type { position: fixed !important; z-index: 1; ${css} }`,
+  });
+  await page.getByRole("button", { name: "Take the tour" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.waitForFunction(() => document.getAnimations().length === 0);
+  await page.waitForTimeout(900);
+};
+
+test("moves away from a target pinned in the corner the guide would dock in", async ({ page, isMobile }) => {
+  await pinFirstTarget(page, "inset-inline-end: 24px; inset-block-end: 24px; inline-size: 220px; block-size: 64px;");
+  const guide = page.getByRole("dialog");
+  expect(await overlap(page)).toBe(false);
+  // A floating guide goes to the other side; a full-width sheet cannot, so it goes to the top edge.
+  if (isMobile) await expect(guide).toHaveAttribute("data-edge", "top");
+  else await expect(guide).toHaveAttribute("data-position", "start");
+});
+
+test("goes to the top edge when a target spans the bottom of the window", async ({ page }) => {
+  await pinFirstTarget(page, "inset-inline: 24px; inset-block-end: 24px; block-size: 64px;");
+  expect(await overlap(page)).toBe(false);
+  await expect(page.getByRole("dialog")).toHaveAttribute("data-edge", "top");
+});
+
+test("on a phone the guide spans the width of the window", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "only the phone layout is a full-width sheet");
+  await open(page);
+  const { left, right, width } = await page.evaluate(() => {
+    const r = document.querySelector(".sf-guide")!.getBoundingClientRect();
+    return { left: r.left, right: r.right, width: window.innerWidth };
+  });
+  expect(left).toBe(0);
+  expect(right).toBe(width);
+});

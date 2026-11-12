@@ -5,7 +5,7 @@ export default defineConfig({
   resolve: { alias: { "speak-friend": fileURLToPath(new URL("../core/src/index.ts", import.meta.url)) } },
   test: {
     environment: "jsdom",
-    include: ["test/**/*.test.tsx"],
+    include: ["test/**/*.test.{ts,tsx}"],
     coverage: {
       provider: "v8",
       include: ["src/**"],

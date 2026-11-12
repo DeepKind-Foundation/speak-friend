@@ -1,7 +1,8 @@
 import type { CodeLines, Token } from "../site/code-lines";
 import { toText } from "../site/code-lines";
 import { highlight } from "../site/highlight";
-import { skins, type Options, type SkinName } from "./options";
+import { labels } from "../site/labels";
+import { defaults, skins, type Options, type SkinName } from "./options";
 import { steps } from "./tour";
 
 /** The files the page shows. */
@@ -29,10 +30,11 @@ const rootSource = (o: Options): string =>
     "      <App />",
     "      <TourGuide",
     "        labels={labels}",
-    `        position="${o.position}"`,
-    ...(o.theme === "system" ? [] : [`        theme="${o.theme}"`]),
-    `        announce="${o.announce}"`,
-    ...(o.dim === "on" ? ["        dim"] : []),
+    // Only what differs from the defaults is written, as it would be in an app.
+    ...(o.position === defaults.position ? [] : [`        position="${o.position}"`]),
+    ...(o.theme === defaults.theme ? [] : [`        theme="${o.theme}"`]),
+    ...(o.announce === defaults.announce ? [] : [`        announce="${o.announce}"`]),
+    ...(o.dim === defaults.dim ? [] : ["        dim"]),
     "      />",
     "    </TourProvider>",
     "  );",
@@ -64,6 +66,9 @@ const tourSource = (): string =>
     '  next: "Next",',
     '  finish: "Finish",',
     '  close: "Close",',
+    // The strings the stage uses, so the code does what the page does.
+    ...(labels.waiting ? [`  waiting: ${quote(labels.waiting)},`] : []),
+    ...(labels.ended ? [`  ended: ${quote(labels.ended)},`] : []),
     "};",
   ].join("\n");
 

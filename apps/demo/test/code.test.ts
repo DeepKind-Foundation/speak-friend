@@ -8,11 +8,18 @@ describe("Root.tsx", () => {
     const text = fileText("Root.tsx", defaults);
     expect(text).toContain('import { TourGuide, TourProvider } from "speak-friend-react";');
     expect(text).toContain("<TourProvider tours={tours} store={store} context={null}>");
-    expect(text).toContain('position="end"\n        announce="focus"\n      />');
+    expect(text).toContain("<TourGuide\n        labels={labels}\n      />");
+  });
+
+  it("leaves out every prop that is at its default", () => {
+    const text = fileText("Root.tsx", defaults);
+    for (const prop of ["position=", "theme=", "announce=", "dim"]) expect(text).not.toContain(prop);
+    expect(fileText("Root.tsx", { ...defaults, position: "start" })).toContain('position="start"');
+    expect(fileText("Root.tsx", { ...defaults, announce: "live" })).toContain('announce="live"');
   });
 
   it("adds a bare dim prop only while dimming is on", () => {
-    expect(fileText("Root.tsx", { ...defaults, dim: "on" })).toContain('announce="focus"\n        dim\n      />');
+    expect(fileText("Root.tsx", { ...defaults, dim: "on" })).toContain("labels={labels}\n        dim\n      />");
     expect(fileText("Root.tsx", defaults)).not.toContain("dim");
   });
 
@@ -23,12 +30,24 @@ describe("Root.tsx", () => {
 
   it("tags tokens so the text can be coloured", () => {
     const tokens = fileCode("Root.tsx", defaults).flat();
-    expect(tokens.some((t) => t.kind === "string" && t.text === '"end"')).toBe(true);
+    expect(
+      fileCode("Root.tsx", { ...defaults, position: "start" })
+        .flat()
+        .some((t) => t.kind === "string" && t.text === '"start"'),
+    ).toBe(true);
     expect(tokens.some((t) => t.kind === "tag" && t.text === "TourGuide")).toBe(true);
   });
 });
 
 describe("the other files", () => {
+  it("tour.ts has the same labels the stage uses", async () => {
+    const { labels } = await import("../src/site/labels");
+    const text = fileText("tour.ts", defaults);
+    for (const key of ["back", "next", "finish", "close", "waiting", "ended"] as const) {
+      expect(text).toContain(`  ${key}: ${JSON.stringify(labels[key])},`);
+    }
+  });
+
   it("tour.ts holds every step of the sample tour", () => {
     const text = fileText("tour.ts", defaults);
     for (const title of ["Add a task", "Your tasks", "Narrow the list"]) expect(text).toContain(title);
@@ -66,9 +85,7 @@ describe("fileRows", () => {
             .join("")
             .trim()}`,
       );
-    expect(changed).toEqual(['removed position="end"', 'added position="start"']);
-    const order = rows.map((row) => row.change);
-    expect(order.indexOf("removed") + 1).toBe(order.indexOf("added"));
+    expect(changed).toEqual(['added position="start"']);
   });
 
   it("shows a new line as added only", () => {

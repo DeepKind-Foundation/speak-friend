@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scoped targets fixture</title>
+    <style>
+      body {
+        margin: 0;
+        font:
+          16px system-ui,
+          sans-serif;
+      }
+      main {
+        padding: 16px;
+      }
+      .spacer {
+        height: 1100px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Fixture</h1>
+      <x-launcher id="launcher"></x-launcher>
+      <!-- The same name in the page and in the first card: only the second card is meant. -->
+      <p data-tour="save" id="page-save">A page element named save</p>
+      <x-card id="card-a"></x-card>
+      <x-wrap id="wrap" style="display: contents"></x-wrap>
+      <x-scroller id="scroller"></x-scroller>
+      <x-closed id="closed"></x-closed>
+      <div class="spacer"></div>
+      <x-card id="card-b"></x-card>
+      <div class="spacer"></div>
+    </main>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

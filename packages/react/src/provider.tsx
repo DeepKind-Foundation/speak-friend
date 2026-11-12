@@ -1,10 +1,13 @@
 import { createContext, useContext, useMemo, useSyncExternalStore, type JSX, type ReactNode } from "react";
 import { createTours, type Options, type Progress, type Snapshot, type Tours } from "speak-friend";
-import { waitForTarget } from "./wait-for-target.js";
+import { markedElements, usesWithin } from "./scope.js";
+import { waitForScoped } from "./wait-for-target.js";
 
 interface TourContextValue {
   tours: Tours<never>;
   onError: (error: unknown) => void;
+  /** Whether any step names a `within`, so the extra work for web components is only done by apps that need it. */
+  scoped: boolean;
 }
 
 const TourContext = createContext<TourContextValue | null>(null);
@@ -28,11 +31,18 @@ export function TourProvider<C>({
 }: TourProviderProps<C>): JSX.Element {
   const { tours, store, context, navigate, maxDismissals } = options;
   const value = useMemo<TourContextValue>(() => {
-    // The elements on the page when a navigation started. Some may be the old page's copy of a target.
+    const scoped = usesWithin(tours);
+    // The elements on the page when a navigation started. Some may be the old page's copy of a target. Open shadow trees
+    // are only searched when some step uses `within`.
     let before: ReadonlySet<Element> | undefined;
     const go = navigate
       ? async (route: string): Promise<void> => {
-          before = typeof document === "undefined" ? undefined : new Set(document.querySelectorAll("[data-tour]"));
+          before =
+            typeof document === "undefined"
+              ? undefined
+              : scoped
+                ? markedElements()
+                : new Set(document.querySelectorAll("[data-tour]"));
           await navigate(route);
         }
       : undefined;
@@ -47,10 +57,20 @@ export function TourProvider<C>({
         isAvailable: (step, { navigated }) => {
           const stale = navigated ? before : undefined;
           if (!navigated) before = undefined;
-          return waitForTarget(step.target, step.timeout ?? targetTimeout, { stale });
+          return waitForScoped(step.target, step.timeout ?? targetTimeout, { stale, within: step.within }).then((r) => {
+            if (r.invalid) onError(new Error(`Step "${step.id}": within is not a selector or a list of selectors.`));
+            else if (r.blocked)
+              onError(
+                new Error(
+                  `Step "${step.id}": the element matching ${JSON.stringify(step.within)} has no open shadow root (it is closed, or has not rendered).`,
+                ),
+              );
+            return r.found;
+          });
         },
       }) as unknown as Tours<never>,
       onError,
+      scoped,
     };
   }, [tours, store, context, navigate, maxDismissals, targetTimeout, onError]);
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
@@ -65,6 +85,11 @@ const useContextValue = (): TourContextValue => {
 /** The tour controller: offered, start, next, back, close, restart, dismiss. */
 export function useTours<C = unknown>(): Tours<C> {
   return useContextValue().tours as unknown as Tours<C>;
+}
+
+/** Whether any step names a `within`. */
+export function useScoped(): boolean {
+  return useContextValue().scoped;
 }
 
 /** Runs a step change and reports a failure through the provider's `onError`. */

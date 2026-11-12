@@ -14,7 +14,7 @@ ${quickStart.install}
 ## Facts
 
 - The engine has no DOM or React dependency and runs on the server. It models a tour as chapters (one per route) and steps.
-- A step points at an element with a data-tour attribute. If a name is used twice, the first visible element wins.
+- A step points at an element with a data-tour attribute. If a name is used twice, the first visible element wins. A target inside a web component is reached by naming the component on the step with within; only that component's open shadow tree is searched.
 - The library has no text of its own: the labels prop supplies every string, in any language.
 - The guide is a non-modal dialog docked to the window. Focus moves to the step title, Escape closes it and returns focus to the opener, and it follows the page direction, so it mirrors in right-to-left layouts.
 - Progress is saved through a store you provide. memoryStore and webStorageStore (localStorage, falling back to memory when the browser refuses) are included. A store that fails does not stop the tour.

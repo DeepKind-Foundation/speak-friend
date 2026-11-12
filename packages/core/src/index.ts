@@ -10,6 +10,11 @@ export interface Step<C = unknown> {
   placement?: Placement;
   /** Leaves the step out for this context. */
   skipIf?: (context: C) => boolean;
+  /**
+   * How long to wait for the target to appear, in ms, before the step is skipped. Used by `speak-friend-react`, where
+   * it overrides the provider's `targetTimeout`; a custom `isAvailable` decides for itself.
+   */
+  timeout?: number;
 }
 
 export interface Chapter<C = unknown> {
@@ -81,6 +86,15 @@ export interface Tours<C> {
   dismiss(tourId: string): Promise<void>;
   snapshot(): Snapshot<C>;
   subscribe(listener: (snapshot: Snapshot<C>) => void): () => void;
+  /**
+   * What the engine last read from or wrote to the store for a tour, so a button can say "Continue" without waiting
+   * for the store. It is null until `offered()`, `start()` or `dismiss()` has run, and for progress that belongs to an
+   * older version of the tour. It is a per-engine view: it does not follow changes made elsewhere, such as another tab.
+   * The same object is returned until the progress changes.
+   */
+  progress(tourId: string): Progress | null;
+  /** Calls the listener whenever `progress()` may return something different. Returns a function that stops it. */
+  subscribeProgress(listener: () => void): () => void;
 }
 
 /** In-memory store, for tests and demos. */
@@ -99,6 +113,8 @@ const IDLE = { status: "idle", tourId: null, chapter: null, step: null, index: 0
 export function createTours<C>(options: Options<C>): Tours<C> {
   const { tours, store, context, navigate, isAvailable, maxDismissals = 2 } = options;
   const listeners = new Set<(s: Snapshot<C>) => void>();
+  const known: Record<string, Progress> = {};
+  const progressListeners = new Set<() => void>();
   let current: Snapshot<C> = { ...IDLE };
   let places: Place<C>[] = [];
   let tour: Tour<C> | null = null;
@@ -120,6 +136,23 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     for (const l of [...listeners]) l(current);
   };
 
+  /** Keeps what the store holds for a tour, and tells the listeners when it is different from what was kept. */
+  const remember = (id: string, progress: Progress | null) => {
+    const old = known[id];
+    if (
+      !progress ||
+      (old &&
+        old.status === progress.status &&
+        old.version === progress.version &&
+        old.chapter === progress.chapter &&
+        old.step === progress.step &&
+        old.dismissals === progress.dismissals)
+    )
+      return;
+    known[id] = progress;
+    for (const l of [...progressListeners]) l();
+  };
+
   const find = (id: string): Tour<C> => {
     const t = tours.find((x) => x.id === id);
     if (!t) throw new Error(`Unknown tour: ${id}`);
@@ -133,8 +166,11 @@ export function createTours<C>(options: Options<C>): Tours<C> {
         .filter((p) => !p.step.skipIf?.(context)),
     );
 
-  const save = (t: Tour<C>, patch: Partial<Progress> & Pick<Progress, "status">, old: Progress | null) =>
-    store.set(t.id, { version: t.version, chapter: 0, step: 0, dismissals: old?.dismissals ?? 0, ...patch });
+  const save = async (t: Tour<C>, patch: Partial<Progress> & Pick<Progress, "status">, old: Progress | null) => {
+    const progress: Progress = { version: t.version, chapter: 0, step: 0, dismissals: old?.dismissals ?? 0, ...patch };
+    await store.set(t.id, progress);
+    remember(t.id, progress);
+  };
 
   /** Shows the first available step from `from` in `direction`, or finishes the tour. */
   async function show(from: number, direction: 1 | -1, run: number): Promise<void> {
@@ -197,6 +233,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     const run = ++epoch;
     shown = false;
     const progress = await store.get(id);
+    remember(id, progress);
     if (run !== epoch) return;
     tour = t;
     places = placesOf(t);
@@ -218,6 +255,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
       for (const t of tours) {
         if (t.appliesTo && !t.appliesTo(context)) continue;
         const p = await store.get(t.id);
+        remember(t.id, p);
         const current = p !== null && p.version >= t.version;
         if (current && p.status === "completed") continue;
         if (current && p.status === "dismissed" && p.dismissals >= maxDismissals) continue;
@@ -247,6 +285,15 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     subscribe(listener) {
       listeners.add(listener);
       return () => void listeners.delete(listener);
+    },
+    progress(id) {
+      const p = known[id];
+      const t = tours.find((x) => x.id === id);
+      return p && t && p.version >= t.version ? p : null;
+    },
+    subscribeProgress(listener) {
+      progressListeners.add(listener);
+      return () => void progressListeners.delete(listener);
     },
   };
 }

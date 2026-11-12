@@ -47,14 +47,25 @@ await tours.start("welcome");
 - While the guide is open, `scroll-padding-bottom` keeps focused elements clear of it.
 - Name a target once per page. A name used on two pages can match the old page's element while the route changes, so a step can be shown before the new page has rendered. The ring looks its target up again on every layout change, so it follows the new element when one with that name appears.
 
+## Reading progress
+
+`useTourProgress(tourId)` returns the saved progress the engine last read or wrote, or `null`, and re-renders when it changes. Call `offered()` once when the page opens to load it.
+
+```tsx
+const tours = useTours();
+const progress = useTourProgress("welcome");
+useEffect(() => void tours.offered(), [tours]);
+return <button onClick={() => tours.start("welcome")}>{progress?.status === "started" ? "Continue" : "Start"}</button>;
+```
+
 ## Props of `TourProvider`
 
 `tours`, `store`, `context`, `navigate` and `maxDismissals` are passed to the engine. Two more:
 
-| Prop            | Default         | Description                                                          |
-| --------------- | --------------- | -------------------------------------------------------------------- |
-| `targetTimeout` | `1500`          | Milliseconds to wait for a step's target before skipping the step.   |
-| `onError`       | `console.error` | Called when a step change fails, for example when the store rejects. |
+| Prop            | Default         | Description                                                                                     |
+| --------------- | --------------- | ----------------------------------------------------------------------------------------------- |
+| `targetTimeout` | `1500`          | Milliseconds to wait for a step's target before skipping the step. A step's own `timeout` wins. |
+| `onError`       | `console.error` | Called when a step change fails, for example when the store rejects.                            |
 
 ## Props of `TourGuide`
 

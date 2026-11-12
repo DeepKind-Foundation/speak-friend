@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import axe from "axe-core";
 import { memoryStore, type Tour } from "speak-friend";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TourGuide, TourProvider, useTours, type GuideLabels } from "../src/index";
+import { TourGuide, TourProvider, useTourProgress, useTours, type GuideLabels } from "../src/index";
 
 type Ctx = { roles: string[] };
 
@@ -199,6 +199,33 @@ describe("the guide", () => {
     detach(document.querySelector('[data-tour="card"]'));
     document.body.append(document.createElement("div"));
     await waitFor(() => expect(document.querySelector(".sf-ring")).toBeNull());
+  });
+
+  it("skips a step whose own timeout is short, without waiting for the provider's", async () => {
+    const quick: Tour<Ctx> = {
+      ...tour,
+      chapters: [
+        {
+          id: "main",
+          route: "/",
+          steps: (tour.chapters[0]?.steps ?? []).map((s) => (s.id === "gone" ? { ...s, timeout: 10 } : s)),
+        },
+      ],
+    };
+    render(
+      <TourProvider tours={[quick]} store={memoryStore()} context={context} targetTimeout={5000}>
+        <Starter />
+        <div data-tour="card">card</div>
+        <div data-tour="nav">nav</div>
+        <div data-tour="list">list</div>
+        <TourGuide labels={labels} />
+      </TourProvider>,
+    );
+    await begin();
+    await press("Dalej");
+    await waitFor(() => screen.getByText("Second title"));
+    await press("Dalej");
+    await waitFor(() => expect(screen.getByText("Third title")).toBeTruthy());
   });
 
   it("skips a step whose target is not on the page", async () => {
@@ -441,5 +468,41 @@ describe("focus when the opener is gone", () => {
   it("uses the element returned by fallbackFocus", async () => {
     await start({ fallbackFocus: () => screen.getByText("fallback") });
     expect(document.activeElement?.textContent).toBe("fallback");
+  });
+});
+
+function ProgressLabel() {
+  const t = useTours<Ctx>();
+  const progress = useTourProgress("welcome");
+  return (
+    <button type="button" onClick={() => void t.offered()}>
+      {progress ? `${progress.status} ${progress.step}` : "none"}
+    </button>
+  );
+}
+
+describe("useTourProgress", () => {
+  it("shows what the store holds once the engine has read it, and follows the tour", async () => {
+    const store = memoryStore();
+    await store.set("welcome", { status: "started", version: 1, chapter: 0, step: 1, dismissals: 0 });
+    render(
+      <TourProvider tours={tours} store={store} context={context} targetTimeout={30}>
+        <ProgressLabel />
+        <Starter />
+        <div data-tour="card">card</div>
+        <div data-tour="nav">nav</div>
+        <div data-tour="list">list</div>
+        <TourGuide labels={labels} />
+      </TourProvider>,
+    );
+    expect(screen.getByText("none")).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(screen.getByText("none"));
+    });
+    expect(await screen.findByText("started 1")).toBeTruthy();
+    await begin();
+    expect(screen.getByText("started 1")).toBeTruthy();
+    await press("Dalej");
+    await waitFor(() => expect(screen.getByText("started 3")).toBeTruthy());
   });
 });

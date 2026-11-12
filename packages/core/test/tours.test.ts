@@ -238,3 +238,93 @@ describe("changes that overlap", () => {
     expect(await store.get("welcome")).toBeNull();
   });
 });
+
+describe("known progress", () => {
+  const started = { status: "started", version: 1, chapter: 1, step: 0, dismissals: 0 } as const;
+  /** A store that hands out a new object on every read, as a database or localStorage does. */
+  const copying = (base = memoryStore()) => ({
+    ...base,
+    get: async (id: string) => {
+      const p = await base.get(id);
+      return p && { ...p };
+    },
+  });
+  const withStore = (store: ReturnType<typeof copying>, roles = ["member", "mentor"]) =>
+    createTours<Ctx>({ tours: [welcome, mentorTour], store, context: { roles } });
+
+  it("knows nothing until the engine has read the store", () => {
+    expect(setup().tours.progress("welcome")).toBeNull();
+  });
+
+  it("is loaded for every tour by offered(), and listeners hear about it once", async () => {
+    const store = copying();
+    await store.set("welcome", started);
+    const tours = withStore(store);
+    const heard = vi.fn();
+    tours.subscribeProgress(heard);
+    await tours.offered();
+    expect(tours.progress("welcome")).toEqual(started);
+    expect(tours.progress("mentor")).toBeNull();
+    expect(heard).toHaveBeenCalledTimes(1);
+    await tours.offered();
+    expect(heard).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the same object while nothing changes, so it can be used as a snapshot", async () => {
+    const store = copying();
+    await store.set("welcome", started);
+    const tours = withStore(store);
+    await tours.offered();
+    const first = tours.progress("welcome");
+    await tours.offered();
+    expect(tours.progress("welcome")).toBe(first);
+  });
+
+  it("follows the tour as it is walked, closed and finished, without touching the snapshot subscribers", async () => {
+    const { tours } = setup();
+    const snapshots = vi.fn();
+    tours.subscribe(snapshots);
+    await tours.start("welcome");
+    expect(tours.progress("welcome")).toMatchObject({ status: "started", chapter: 0, step: 0 });
+    await tours.next();
+    expect(tours.progress("welcome")).toMatchObject({ status: "started", chapter: 1, step: 0 });
+    await tours.close();
+    expect(tours.progress("welcome")).toMatchObject({ status: "started", chapter: 1, step: 0 });
+    await tours.start("welcome");
+    await tours.next();
+    await tours.next();
+    expect(tours.progress("welcome")?.status).toBe("completed");
+    expect(snapshots.mock.calls.map(([s]) => `${s.status}:${s.index}`)).toEqual([
+      "running:0",
+      "running:1",
+      "idle:0",
+      "running:1",
+      "running:2",
+      "idle:0",
+    ]);
+  });
+
+  it("records a dismissal", async () => {
+    const { tours } = setup();
+    await tours.dismiss("welcome");
+    expect(tours.progress("welcome")).toMatchObject({ status: "dismissed", dismissals: 1 });
+  });
+
+  it("ignores progress that belongs to an older version of the tour", async () => {
+    const store = copying();
+    await store.set("welcome", { ...started, version: 0 });
+    const tours = withStore(store);
+    await tours.offered();
+    expect(tours.progress("welcome")).toBeNull();
+  });
+
+  it("stops telling a listener once it unsubscribes", async () => {
+    const { tours, store } = setup();
+    await store.set("welcome", started);
+    const heard = vi.fn();
+    const off = tours.subscribeProgress(heard);
+    off();
+    await tours.offered();
+    expect(heard).not.toHaveBeenCalled();
+  });
+});

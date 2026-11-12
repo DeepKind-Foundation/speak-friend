@@ -2,27 +2,31 @@ import { useId, type JSX } from "react";
 
 interface ChoiceProps<T extends string> {
   legend: string;
+  /** One line on what the choice does. */
+  hint: string;
   value: T;
   options: readonly T[];
-  /** Text to show instead of the value, for values that read badly as text. */
-  labels?: Partial<Record<T, string>>;
   onChange: (value: T) => void;
 }
 
-/** A labelled group of radio buttons. */
-export function Choice<T extends string>({ legend, value, options, labels, onChange }: ChoiceProps<T>): JSX.Element {
+/** A labelled group of radio buttons with a line saying what it does. */
+export function Choice<T extends string>({ legend, hint, value, options, onChange }: ChoiceProps<T>): JSX.Element {
   const name = useId();
+  const hintId = useId();
   return (
-    <fieldset className="choice">
+    <fieldset className="choice" aria-describedby={hintId}>
       <legend>{legend}</legend>
       <div className="choice-options">
         {options.map((option) => (
           <label key={option}>
             <input type="radio" name={name} checked={value === option} onChange={() => onChange(option)} />
-            <span>{labels?.[option] ?? option}</span>
+            <span>{option}</span>
           </label>
         ))}
       </div>
+      <p className="hint" id={hintId}>
+        {hint}
+      </p>
     </fieldset>
   );
 }

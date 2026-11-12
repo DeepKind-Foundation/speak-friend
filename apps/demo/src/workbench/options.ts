@@ -31,6 +31,26 @@ export const defaults: Options = {
   direction: "ltr",
 };
 
+/** A starting point: a name, what it is for, and the options it changes. */
+export interface Preset {
+  name: string;
+  patch: Partial<Options>;
+}
+
+export const presets: readonly Preset[] = [
+  { name: "Default", patch: {} },
+  { name: "Night, page dimmed", patch: { theme: "dark", dim: "on" } },
+  { name: "Right to left", patch: { direction: "rtl" } },
+  { name: "Your colours", patch: { skin: "ember" } },
+];
+
+/** The options a preset stands for. */
+export const optionsOf = (preset: Preset): Options => ({ ...defaults, ...preset.patch });
+
+/** True when every option is the same. */
+export const sameOptions = (a: Options, b: Options): boolean =>
+  (Object.keys(a) as (keyof Options)[]).every((key) => a[key] === b[key]);
+
 /** The two custom properties a skin overrides. Values are written so they work in both themes. */
 export const skins: Record<Exclude<SkinName, "default">, { accent: string; primary: string }> = {
   ember: { accent: "light-dark(oklch(48% 0.14 45), oklch(80% 0.11 60))", primary: "oklch(86% 0.14 75)" },

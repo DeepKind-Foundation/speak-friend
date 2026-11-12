@@ -33,6 +33,7 @@ export function Controls({ options, onChange }: ControlsProps): JSX.Element {
           options={["focus", "live"]}
           onChange={(v) => onChange("announce", v)}
         />
+        <Choice legend="dim" value={options.dim} options={["off", "on"]} onChange={(v) => onChange("dim", v)} />
         <Choice
           legend="colours"
           value={options.skin}

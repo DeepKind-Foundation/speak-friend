@@ -309,6 +309,18 @@ describe("the guide", () => {
     expect(screen.getByRole("status").textContent).toBe("Krok 1 z 4: First title");
   });
 
+  it("tints the page around the ring only when asked", async () => {
+    setup();
+    await begin();
+    await waitFor(() => expect(document.querySelector(".sf-ring")).not.toBeNull());
+    expect(document.querySelector(".sf-ring")?.hasAttribute("data-dim")).toBe(false);
+    cleanup();
+    setup({ dim: true });
+    await begin();
+    await waitFor(() => expect(document.querySelector(".sf-ring[data-dim]")).not.toBeNull());
+    expect(document.querySelector(".sf-ring")?.getAttribute("aria-hidden")).toBe("true");
+  });
+
   it("draws a ring over the target without blocking it", async () => {
     setup();
     await begin();

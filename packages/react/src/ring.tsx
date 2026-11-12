@@ -76,10 +76,12 @@ function useBox(target: string): Box | null {
 export function Ring({
   target,
   theme,
+  dim,
   container,
 }: {
   target: string;
   theme?: "light" | "dark";
+  dim: boolean;
   container: HTMLElement;
 }): JSX.Element | null {
   const box = useBox(target);
@@ -88,6 +90,7 @@ export function Ring({
     <div
       className="sf-ring"
       data-theme={theme}
+      data-dim={dim || undefined}
       aria-hidden="true"
       style={{ top: box.top, left: box.left, width: box.width, height: box.height }}
     />,

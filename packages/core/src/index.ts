@@ -41,6 +41,8 @@ export interface Progress {
   version: number;
   chapter: number;
   step: number;
+  /** The id of the step that was shown. Resuming looks for it first, so edits to the tour do not move the person. */
+  stepId?: string;
   /** Number of times the offer was dismissed. */
   dismissals: number;
 }
@@ -86,6 +88,11 @@ export interface Options<C> {
   isAvailable?: (step: Step<C>, info: AvailabilityInfo) => boolean | Promise<boolean>;
   /** Dismissals after which a tour is no longer offered. Default 2. */
   maxDismissals?: number;
+  /**
+   * Called when the store fails to read or save. The tour carries on without persistence: a store that is blocked or
+   * full must not stop anyone from seeing the tour.
+   */
+  onError?: (error: unknown) => void;
 }
 
 export interface Tours<C> {
@@ -107,7 +114,12 @@ export interface Tours<C> {
    * The same object is returned until the progress changes.
    */
   progress(tourId: string): Progress | null;
-  /** Calls the listener whenever `progress()` may return something different. Returns a function that stops it. */
+  /**
+   * Whether the store has been asked about this tour, by `offered()`, `start()` or `dismiss()`, even if it failed. Until
+   * then `progress()` returning null does not mean the person has not started, so wait before showing "Start".
+   */
+  progressLoaded(tourId: string): boolean;
+  /** Calls the listener whenever `progress()` or `progressLoaded()` may return something different. */
   subscribeProgress(listener: () => void): () => void;
 }
 
@@ -120,6 +132,60 @@ export function memoryStore(initial: Record<string, Progress> = {}): ProgressSto
   };
 }
 
+const STATUSES: readonly string[] = ["started", "completed", "dismissed"];
+
+/** Whether what came back from a store has the shape of progress; anything else is treated as nothing saved. */
+function validProgress(value: unknown): Progress | null {
+  if (typeof value !== "object" || value === null) return null;
+  const p = value as Record<string, unknown>;
+  const numbers = [p.version, p.chapter, p.step, p.dismissals];
+  if (typeof p.status !== "string" || !STATUSES.includes(p.status)) return null;
+  if (!numbers.every((n) => typeof n === "number" && Number.isFinite(n))) return null;
+  if (p.stepId !== undefined && typeof p.stepId !== "string") return null;
+  return value as Progress;
+}
+
+/** The part of the browser's `Storage` that is used. */
+export interface StorageLike {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+}
+
+/**
+ * Keeps progress in `localStorage` (or any `Storage`). When the browser refuses, because storage is blocked, full or
+ * missing, it keeps the progress in memory for the session instead of failing. Text that is not progress is ignored.
+ */
+export function webStorageStore(options: { storage?: StorageLike; prefix?: string } = {}): ProgressStore {
+  const prefix = options.prefix ?? "speak-friend:";
+  const memory = memoryStore();
+  const storage = (): StorageLike | null => {
+    try {
+      return options.storage ?? (globalThis as { localStorage?: StorageLike }).localStorage ?? null;
+    } catch {
+      return null;
+    }
+  };
+  return {
+    async get(id) {
+      try {
+        const raw = storage()?.getItem(prefix + id);
+        if (raw) return validProgress(JSON.parse(raw));
+      } catch {
+        // Blocked or not JSON: fall through to what this session kept.
+      }
+      return memory.get(id);
+    },
+    async set(id, progress) {
+      await memory.set(id, progress);
+      try {
+        storage()?.setItem(prefix + id, JSON.stringify(progress));
+      } catch {
+        // Kept in memory above.
+      }
+    },
+  };
+}
+
 type Place<C> = { chapterIndex: number; stepIndex: number; chapter: Chapter<C>; step: Step<C> };
 
 /** How long a step change may take before the snapshot says it is waiting, so quick changes do not flash. */
@@ -128,10 +194,18 @@ const WAITING_AFTER = 100;
 const IDLE = { status: "idle", tourId: null, chapter: null, step: null, index: 0, total: 0, waiting: false } as const;
 
 export function createTours<C>(options: Options<C>): Tours<C> {
-  const { tours, store, context, navigate, isAvailable, maxDismissals = 2 } = options;
+  const { tours, store, context, navigate, isAvailable, maxDismissals = 2, onError } = options;
   const listeners = new Set<(s: Snapshot<C>) => void>();
   const known: Record<string, Progress> = {};
   const progressListeners = new Set<() => void>();
+  const loaded = new Set<string>();
+  // Set when progress() or progressLoaded() may answer differently; flush() tells the listeners once per operation.
+  let dirty = false;
+  const flush = () => {
+    if (!dirty) return;
+    dirty = false;
+    for (const l of [...progressListeners]) l();
+  };
   let current: Snapshot<C> = { ...IDLE };
   let places: Place<C>[] = [];
   let tour: Tour<C> | null = null;
@@ -167,7 +241,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     )
       return;
     known[id] = progress;
-    for (const l of [...progressListeners]) l();
+    dirty = true;
   };
 
   const find = (id: string): Tour<C> => {
@@ -183,10 +257,30 @@ export function createTours<C>(options: Options<C>): Tours<C> {
         .filter((p) => !p.step.skipIf?.(context)),
     );
 
+  /** Asks the store. A failure is reported and counts as nothing saved, so the tour still works without it. */
+  const read = async (id: string): Promise<Progress | null> => {
+    let progress: Progress | null = null;
+    try {
+      progress = validProgress(await store.get(id));
+    } catch (error) {
+      onError?.(error);
+    }
+    if (!loaded.has(id)) {
+      loaded.add(id);
+      dirty = true;
+    }
+    return progress;
+  };
+
   const save = async (t: Tour<C>, patch: Partial<Progress> & Pick<Progress, "status">, old: Progress | null) => {
     const progress: Progress = { version: t.version, chapter: 0, step: 0, dismissals: old?.dismissals ?? 0, ...patch };
-    await store.set(t.id, progress);
+    try {
+      await store.set(t.id, progress);
+    } catch (error) {
+      onError?.(error);
+    }
     remember(t.id, progress);
+    flush();
   };
 
   /** Shows the first available step from `from` in `direction`, or finishes the tour. */
@@ -223,8 +317,8 @@ export function createTours<C>(options: Options<C>): Tours<C> {
         });
         await save(
           tour,
-          { status: "started", chapter: place.chapterIndex, step: place.stepIndex },
-          await store.get(tour.id),
+          { status: "started", chapter: place.chapterIndex, step: place.stepIndex, stepId: place.step.id },
+          await read(tour.id),
         );
         return;
       }
@@ -249,7 +343,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     await save(
       t,
       { status: "completed", chapter: places.at(-1)?.chapterIndex ?? 0, step: places.at(-1)?.stepIndex ?? 0 },
-      await store.get(t.id),
+      await read(t.id),
     );
     tour = null;
     places = [];
@@ -260,18 +354,24 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     const t = find(id);
     const run = ++epoch;
     shown = false;
-    const progress = await store.get(id);
+    const progress = await read(id);
     remember(id, progress);
+    flush();
     if (run !== epoch) return;
     tour = t;
     places = placesOf(t);
     current = { ...IDLE };
     let from = 0;
     if (resume && progress?.status === "started" && progress.version === t.version) {
-      const saved = places.findIndex(
-        (p) =>
-          p.chapterIndex > progress.chapter || (p.chapterIndex === progress.chapter && p.stepIndex >= progress.step),
-      );
+      const byId = progress.stepId === undefined ? -1 : places.findIndex((p) => p.step.id === progress.stepId);
+      const saved =
+        byId !== -1
+          ? byId
+          : places.findIndex(
+              (p) =>
+                p.chapterIndex > progress.chapter ||
+                (p.chapterIndex === progress.chapter && p.stepIndex >= progress.step),
+            );
       from = saved === -1 ? 0 : saved;
     }
     await show(from, 1, run);
@@ -282,13 +382,14 @@ export function createTours<C>(options: Options<C>): Tours<C> {
       const out: Tour<C>[] = [];
       for (const t of tours) {
         if (t.appliesTo && !t.appliesTo(context)) continue;
-        const p = await store.get(t.id);
+        const p = await read(t.id);
         remember(t.id, p);
         const current = p !== null && p.version >= t.version;
         if (current && p.status === "completed") continue;
         if (current && p.status === "dismissed" && p.dismissals >= maxDismissals) continue;
         out.push(t);
       }
+      flush();
       return out;
     },
     start: (id) => begin(id, true),
@@ -304,7 +405,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     },
     async dismiss(id) {
       const t = find(id);
-      const old = await store.get(id);
+      const old = await read(id);
       await save(t, { status: "dismissed", dismissals: (old?.version === t.version ? old.dismissals : 0) + 1 }, null);
     },
     snapshot: () => current,
@@ -317,6 +418,7 @@ export function createTours<C>(options: Options<C>): Tours<C> {
       const t = tours.find((x) => x.id === id);
       return p && t && p.version >= t.version ? p : null;
     },
+    progressLoaded: (id) => loaded.has(id),
     subscribeProgress(listener) {
       progressListeners.add(listener);
       return () => void progressListeners.delete(listener);

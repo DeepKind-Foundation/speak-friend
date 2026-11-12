@@ -8,4 +8,5 @@ export const labels: GuideLabels = {
   finish: "Finish",
   close: "Close",
   waiting: "Waiting for the page",
+  ended: "Tour closed",
 };

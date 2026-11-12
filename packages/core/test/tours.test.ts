@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createTours, memoryStore, type Tour } from "../src/index";
+import { createTours, memoryStore, webStorageStore, type Tour } from "../src/index";
 
 type Ctx = { roles: string[] };
 
@@ -461,5 +461,180 @@ describe("waiting for a step", () => {
     await flush(500);
     expect(tours.snapshot().status).toBe("idle");
     vi.useRealTimers();
+  });
+});
+
+describe("when the store cannot be used", () => {
+  const broken = (fail: { get?: boolean; set?: boolean }) => {
+    const inner = memoryStore();
+    return {
+      get: async (id: string) => {
+        if (fail.get) throw new Error("blocked");
+        return inner.get(id);
+      },
+      set: async (id: string, p: Parameters<typeof inner.set>[1]) => {
+        if (fail.set) throw new Error("quota");
+        return inner.set(id, p);
+      },
+    };
+  };
+  const make = (fail: { get?: boolean; set?: boolean }) => {
+    const onError = vi.fn();
+    const tours = createTours<Ctx>({
+      tours: [welcome],
+      store: broken(fail),
+      context: { roles: ["member"] },
+      onError,
+    });
+    return { tours, onError };
+  };
+
+  it("starts the tour anyway when reading fails, and says what went wrong", async () => {
+    const { tours, onError } = make({ get: true });
+    await tours.start("welcome");
+    expect(tours.snapshot()).toMatchObject({ status: "running", step: { id: "card" } });
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "blocked" }));
+  });
+
+  it("keeps the tour going when saving fails, and still follows progress in memory", async () => {
+    const { tours, onError } = make({ set: true });
+    await tours.start("welcome");
+    await tours.next();
+    expect(tours.snapshot().step?.id).toBe("list");
+    expect(tours.progress("welcome")).toMatchObject({ status: "started", chapter: 1 });
+    expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "quota" }));
+  });
+
+  it("offers the tours when reading fails", async () => {
+    const { tours, onError } = make({ get: true });
+    expect((await tours.offered()).map((t) => t.id)).toEqual(["welcome"]);
+    expect(onError).toHaveBeenCalled();
+  });
+});
+
+describe("knowing whether progress has been read", () => {
+  it("is false until the store has been asked, then true, and tells listeners", async () => {
+    const { tours } = setup();
+    const heard = vi.fn();
+    tours.subscribeProgress(heard);
+    expect(tours.progressLoaded("welcome")).toBe(false);
+    await tours.offered();
+    expect(tours.progressLoaded("welcome")).toBe(true);
+    expect(tours.progress("welcome")).toBeNull();
+    expect(heard).toHaveBeenCalled();
+  });
+
+  it("is true after a failed read too, so a page does not wait forever", async () => {
+    const tours = createTours<Ctx>({
+      tours: [welcome],
+      store: {
+        get: async () => {
+          throw new Error("blocked");
+        },
+        set: async () => undefined,
+      },
+      context: { roles: ["member"] },
+      onError: () => undefined,
+    });
+    await tours.offered();
+    expect(tours.progressLoaded("welcome")).toBe(true);
+  });
+});
+
+describe("what comes back from the store", () => {
+  it("ignores an object that is not progress", async () => {
+    const store = memoryStore({
+      welcome: { status: "started", version: 1, chapter: "x", dismissals: 0 } as never,
+    });
+    const tours = createTours<Ctx>({ tours: [welcome], store, context: { roles: ["member"] } });
+    await tours.start("welcome");
+    expect(tours.snapshot().step?.id).toBe("card");
+    expect(tours.progress("welcome")).toMatchObject({ status: "started", chapter: 0 });
+  });
+
+  it("resumes at the step that was saved, by its id, even when steps were added before it", async () => {
+    const store = memoryStore();
+    const before: Tour<Ctx> = {
+      id: "t",
+      version: 1,
+      chapters: [{ id: "c", route: "/", steps: [step("a"), step("b"), step("c")] }],
+    };
+    const first = createTours<Ctx>({ tours: [before], store, context: { roles: [] } });
+    await first.start("t");
+    await first.next();
+    await first.next();
+    await first.close();
+    const after: Tour<Ctx> = {
+      ...before,
+      chapters: [{ id: "c", route: "/", steps: [step("new"), step("a"), step("b"), step("c")] }],
+    };
+    const second = createTours<Ctx>({ tours: [after], store, context: { roles: [] } });
+    await second.start("t");
+    expect(second.snapshot().step?.id).toBe("c");
+  });
+
+  it("falls back to the saved position when the saved step no longer exists", async () => {
+    const store = memoryStore({
+      t: { status: "started", version: 1, chapter: 0, step: 1, stepId: "gone", dismissals: 0 },
+    });
+    const only: Tour<Ctx> = {
+      id: "t",
+      version: 1,
+      chapters: [{ id: "c", route: "/", steps: [step("a"), step("b"), step("c")] }],
+    };
+    const tours = createTours<Ctx>({ tours: [only], store, context: { roles: [] } });
+    await tours.start("t");
+    expect(tours.snapshot().step?.id).toBe("b");
+  });
+});
+
+describe("webStorageStore", () => {
+  const fake = () => {
+    const data = new Map<string, string>();
+    return {
+      data,
+      getItem: (k: string) => data.get(k) ?? null,
+      setItem: (k: string, v: string) => void data.set(k, v),
+    };
+  };
+  const progress = { status: "started", version: 1, chapter: 0, step: 2, stepId: "c", dismissals: 1 } as const;
+
+  it("saves and reads progress under a prefix", async () => {
+    const storage = fake();
+    const store = webStorageStore({ storage });
+    await store.set("t", progress);
+    expect([...storage.data.keys()]).toEqual(["speak-friend:t"]);
+    expect(await webStorageStore({ storage }).get("t")).toEqual(progress);
+  });
+
+  it("returns null for nothing saved, for text that is not JSON and for JSON that is not progress", async () => {
+    const storage = fake();
+    const store = webStorageStore({ storage });
+    expect(await store.get("t")).toBeNull();
+    storage.data.set("speak-friend:t", "{not json");
+    expect(await store.get("t")).toBeNull();
+    storage.data.set("speak-friend:t", JSON.stringify({ status: "started" }));
+    expect(await store.get("t")).toBeNull();
+  });
+
+  it("keeps working in memory when the browser refuses to store anything", async () => {
+    const storage = {
+      getItem: () => {
+        throw new Error("denied");
+      },
+      setItem: () => {
+        throw new Error("denied");
+      },
+    };
+    const store = webStorageStore({ storage });
+    expect(await store.get("t")).toBeNull();
+    await store.set("t", progress);
+    expect(await store.get("t")).toEqual(progress);
+  });
+
+  it("keeps working in memory when there is no storage at all", async () => {
+    const store = webStorageStore();
+    await store.set("t", progress);
+    expect(await store.get("t")).toEqual(progress);
   });
 });

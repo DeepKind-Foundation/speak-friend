@@ -144,31 +144,32 @@ describe("while the first step is taking a moment", () => {
 
   it("says so, marks itself busy, and gives way to the step when it arrives", async () => {
     await startWithoutTargets();
-    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Waiting for the page"));
-    expect(screen.getByRole("status").getAttribute("aria-busy")).toBe("true");
+    await waitFor(() => expect(screen.getByRole("status").textContent).toBe("Waiting for the page"));
+    expect(screen.getByRole("group", { name: "Waiting for the page" }).getAttribute("aria-busy")).toBe("true");
     expect(screen.queryByRole("dialog")).toBeNull();
     await arrive("first");
     await waitFor(() => expect(screen.getByRole("dialog").textContent).toContain("First"));
-    expect(screen.queryByText("Waiting for the page")).toBeNull();
+    expect(screen.queryByRole("group", { name: "Waiting for the page" })).toBeNull();
+    expect(screen.getByRole("status").textContent).toBe("");
   });
 
   it("can be closed with its button, and focus stays where it was", async () => {
     const trigger = await startWithoutTargets();
-    await waitFor(() => screen.getByText("Waiting for the page"));
+    await waitFor(() => screen.getByRole("group", { name: "Waiting for the page" }));
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Close" }));
     });
-    await waitFor(() => expect(screen.queryByText("Waiting for the page")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("group", { name: "Waiting for the page" })).toBeNull());
     expect(document.activeElement).toBe(trigger);
   });
 
   it("can be closed with Escape", async () => {
     const trigger = await startWithoutTargets();
-    await waitFor(() => screen.getByText("Waiting for the page"));
+    await waitFor(() => screen.getByRole("group", { name: "Waiting for the page" }));
     await act(async () => {
       fireEvent.keyDown(document, { key: "Escape" });
     });
-    await waitFor(() => expect(screen.queryByText("Waiting for the page")).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("group", { name: "Waiting for the page" })).toBeNull());
     expect(document.activeElement).toBe(trigger);
   });
 
@@ -177,7 +178,8 @@ describe("while the first step is taking a moment", () => {
     await act(async () => {
       await new Promise((r) => setTimeout(r, 250));
     });
-    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByRole("status").textContent).toBe("");
+    expect(screen.queryByRole("group")).toBeNull();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 });

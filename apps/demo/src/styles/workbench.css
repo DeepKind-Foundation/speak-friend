@@ -1,12 +1,4 @@
 /* The workbench reads like a component data sheet: a title block, a numbered figure, ratings in mono. */
-.label {
-  margin: 0;
-  font: 500 0.6875rem/1.2 var(--font-mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--silver);
-}
-
 .title-block {
   display: grid;
   grid-template-columns: 2fr 3fr;
@@ -24,7 +16,9 @@
   border-inline-start: 1px solid var(--rule);
 }
 
-.title-block strong {
+.title-block strong,
+.title-block h1 {
+  margin: 0;
   font: 600 1.25rem/1.15 var(--font-display);
 }
 
@@ -235,22 +229,6 @@
   gap: var(--space-4);
   align-content: start;
   padding: var(--space-4);
-}
-
-.panel {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.panel pre {
-  margin: 0;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  font: 400 0.75rem/1.55 var(--font-mono);
-  text-align: start;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 
 .log {

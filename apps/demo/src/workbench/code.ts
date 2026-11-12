@@ -1,14 +1,6 @@
+import type { CodeLines, Token, TokenKind } from "../site/code-lines";
+import { toText } from "../site/code-lines";
 import { skins, type Options, type SkinName } from "./options";
-
-/** What a token is, so the page can colour it. */
-export type TokenKind = "tag" | "attr" | "string" | "value" | "punct" | "comment";
-/** A piece of code text with its kind. */
-export interface Token {
-  kind: TokenKind;
-  text: string;
-}
-/** Code as lines of tokens. */
-export type CodeLines = Token[][];
 
 const t = (kind: TokenKind, text: string): Token => ({ kind, text });
 const prop = (name: string, value: Token[]): Token[] => [t("punct", "  "), t("attr", name), t("punct", "="), ...value];
@@ -44,11 +36,6 @@ export function stylesheetCode(skin: SkinName): CodeLines {
     custom("--sf-primary", primary),
     [t("punct", "}")],
   ];
-}
-
-/** Plain text of code lines. */
-export function toText(lines: CodeLines): string {
-  return lines.map((line) => line.map((token) => token.text).join("")).join("\n");
 }
 
 /** The CSS to inject: exactly the text the page shows, or nothing for the default colours. */

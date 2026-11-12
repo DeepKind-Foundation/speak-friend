@@ -1,10 +1,10 @@
 import { useEffect, useState, type JSX } from "react";
 import { memoryStore } from "speak-friend";
 import { TourGuide, TourProvider } from "speak-friend-react";
+import { CodePanel } from "../site/CodePanel";
 import { Header } from "../site/Header";
 import { labels } from "../site/labels";
 import { AnnouncementLog } from "./AnnouncementLog";
-import { CodePanel } from "./CodePanel";
 import { componentCode, stylesheetCode, stylesheetCss } from "./code";
 import { Controls } from "./Controls";
 import { HostApp } from "./HostApp";
@@ -40,7 +40,7 @@ export function WorkbenchPage(): JSX.Element {
           </div>
           <div>
             <span className="label">Description</span>
-            <strong>Accessible page tour guide for React</strong>
+            <h1>Accessible page tour guide for React</h1>
           </div>
         </div>
         <div className="bench">

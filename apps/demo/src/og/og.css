@@ -1,0 +1,40 @@
+.og {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  width: 1200px;
+  height: 630px;
+  padding: 48px 64px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.og-mark {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font: 600 1.625rem/1 var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.og-body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 64px;
+  align-items: center;
+}
+
+.og-copy {
+  display: grid;
+  gap: var(--space-6);
+  justify-items: start;
+}
+
+.og h1 {
+  font-size: 5.5rem;
+}
+
+.og .door {
+  width: 260px;
+}

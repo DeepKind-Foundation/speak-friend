@@ -1,7 +1,12 @@
 import type { JSX } from "react";
+import { Tokens } from "../site/CodePanel";
 import { Door } from "../site/Door";
+import { highlight } from "../site/highlight";
 import { useStartTour } from "../site/useStartTour";
+import { quickStart } from "./quickstart";
 import { TOUR_ID } from "./tours";
+
+const install = highlight(quickStart.install)[0] ?? [];
 
 /** Headline, install command and the button that starts the tour. */
 export function Hero(): JSX.Element {
@@ -20,8 +25,7 @@ export function Hero(): JSX.Element {
             Take the tour
           </button>
           <code className="install">
-            <span className="tk-t">pnpm</span> <span className="tk-a">add</span>{" "}
-            <span className="tk-s">speak-friend-react</span>
+            <Tokens line={install} />
           </code>
         </div>
       </div>

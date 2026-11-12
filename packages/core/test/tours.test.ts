@@ -398,6 +398,56 @@ describe("waiting for a step", () => {
     vi.useRealTimers();
   });
 
+  it("says so when the very first step is slow, with no step yet, and shows it once it is ready", async () => {
+    vi.useFakeTimers();
+    let open!: (available: boolean) => void;
+    const wait = new Promise<boolean>((resolve) => (open = resolve));
+    const { tours } = setup(["member"], { isAvailable: () => wait });
+    const states: string[] = [];
+    tours.subscribe((s) => states.push(`${s.status}:${s.step?.id ?? "-"}:${s.waiting}`));
+    const starting = tours.start("welcome");
+    await flush(99);
+    expect(tours.snapshot().status).toBe("idle");
+    await flush(2);
+    expect(tours.snapshot()).toMatchObject({ status: "running", step: null, chapter: null, waiting: true });
+    open(true);
+    await starting;
+    expect(tours.snapshot()).toMatchObject({ status: "running", step: { id: "card" }, waiting: false });
+    expect(states).toEqual(["running:-:true", "running:card:false"]);
+    vi.useRealTimers();
+  });
+
+  it("ignores next and back while the first step is still being waited for", async () => {
+    vi.useFakeTimers();
+    let open!: (available: boolean) => void;
+    const wait = new Promise<boolean>((resolve) => (open = resolve));
+    const { tours } = setup(["member"], { isAvailable: () => wait });
+    const starting = tours.start("welcome");
+    await flush(200);
+    await tours.next();
+    await tours.back();
+    open(true);
+    await starting;
+    expect(tours.snapshot()).toMatchObject({ step: { id: "card" }, index: 0 });
+    vi.useRealTimers();
+  });
+
+  it("goes back to idle when the first step is slow and then not there, and when closed meanwhile", async () => {
+    vi.useFakeTimers();
+    let open!: (available: boolean) => void;
+    const wait = new Promise<boolean>((resolve) => (open = resolve));
+    const { tours } = setup(["member"], { isAvailable: () => wait });
+    const starting = tours.start("welcome");
+    await flush(200);
+    expect(tours.snapshot().waiting).toBe(true);
+    await tours.close();
+    expect(tours.snapshot()).toMatchObject({ status: "idle", waiting: false });
+    open(false);
+    await starting;
+    expect(tours.snapshot().status).toBe("idle");
+    vi.useRealTimers();
+  });
+
   it("is false again once the tour is closed while waiting", async () => {
     vi.useFakeTimers();
     const { isAvailable } = slow();

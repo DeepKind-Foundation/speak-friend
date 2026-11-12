@@ -62,7 +62,8 @@ export interface Snapshot<C = unknown> {
   total: number;
   /**
    * True while a tour is running and the step it was asked to move to has not been shown for a noticeable moment
-   * (100 ms), because the page is still changing or the target has not appeared. `step` is still the one on screen.
+   * (100 ms), because the page is still changing or the target has not appeared. `step` is still the one on screen,
+   * or `null` when it is the first step being waited for: the snapshot is then `running` with no step yet.
    */
   waiting: boolean;
 }
@@ -196,7 +197,9 @@ export function createTours<C>(options: Options<C>): Tours<C> {
       const place = places[i]!;
       // The step on screen stays until the next one is ready; if that takes a while, say so.
       const notice = setTimeout(() => {
-        if (run === epoch && current.status === "running" && !current.waiting) publish({ ...current, waiting: true });
+        if (run !== epoch || !tour || current.waiting) return;
+        // Before the first step there is nothing on screen yet: the snapshot is running with no step.
+        publish({ ...current, status: "running", tourId: tour.id, total: places.length, waiting: true });
       }, WAITING_AFTER);
       const navigated = current.chapter?.id !== place.chapter.id;
       let available: boolean;
@@ -290,11 +293,9 @@ export function createTours<C>(options: Options<C>): Tours<C> {
     },
     start: (id) => begin(id, true),
     restart: (id) => begin(id, false),
-    next: () => enqueue(async (run) => (current.status === "running" ? show(current.index + 1, 1, run) : undefined)),
+    next: () => enqueue(async (run) => (current.step ? show(current.index + 1, 1, run) : undefined)),
     back: () =>
-      enqueue(async (run) =>
-        current.status === "running" && current.index > 0 ? show(current.index - 1, -1, run) : undefined,
-      ),
+      enqueue(async (run) => (current.step && current.index > 0 ? show(current.index - 1, -1, run) : undefined)),
     async close() {
       epoch++;
       tour = null;

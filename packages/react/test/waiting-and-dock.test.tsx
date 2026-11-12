@@ -120,6 +120,68 @@ describe("while the next step is taking a moment", () => {
   });
 });
 
+describe("while the first step is taking a moment", () => {
+  const startWithoutTargets = async (props: Partial<React.ComponentProps<typeof TourGuide>> = {}) => {
+    render(
+      <TourProvider tours={tours} store={memoryStore()} context={null} targetTimeout={1500}>
+        <Starter />
+        <TourGuide labels={labels} {...props} />
+      </TourProvider>,
+    );
+    const trigger = screen.getByText("begin");
+    trigger.focus();
+    await act(async () => {
+      fireEvent.click(trigger);
+    });
+    return trigger;
+  };
+  const arrive = async (name: string) =>
+    act(async () => {
+      const el = document.createElement("div");
+      el.setAttribute("data-tour", name);
+      document.body.append(el);
+    });
+
+  it("says so, marks itself busy, and gives way to the step when it arrives", async () => {
+    await startWithoutTargets();
+    await waitFor(() => expect(screen.getByRole("status").textContent).toContain("Waiting for the page"));
+    expect(screen.getByRole("status").getAttribute("aria-busy")).toBe("true");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await arrive("first");
+    await waitFor(() => expect(screen.getByRole("dialog").textContent).toContain("First"));
+    expect(screen.queryByText("Waiting for the page")).toBeNull();
+  });
+
+  it("can be closed with its button, and focus stays where it was", async () => {
+    const trigger = await startWithoutTargets();
+    await waitFor(() => screen.getByText("Waiting for the page"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    });
+    await waitFor(() => expect(screen.queryByText("Waiting for the page")).toBeNull());
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("can be closed with Escape", async () => {
+    const trigger = await startWithoutTargets();
+    await waitFor(() => screen.getByText("Waiting for the page"));
+    await act(async () => {
+      fireEvent.keyDown(document, { key: "Escape" });
+    });
+    await waitFor(() => expect(screen.queryByText("Waiting for the page")).toBeNull());
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it("shows nothing when the app gave no waiting text", async () => {
+    await startWithoutTargets({ labels: { ...labels, waiting: undefined } });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 250));
+    });
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+});
+
 describe("keeping clear of the target", () => {
   it("stays where the app put it when the target is not under it", async () => {
     layout = { first: rect(100, 100, 100, 40) };

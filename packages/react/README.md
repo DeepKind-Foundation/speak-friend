@@ -1,6 +1,6 @@
 # speak-friend-react
 
-Accessible product tours for React: a docked, keyboard-first tour guide with a highlight ring, built on [`speak-friend`](../core). Screen reader friendly, and it never dims the page. Demo and workbench: https://speak-friend.dont-mind-ai.com/
+Accessible product tours for React: a docked, keyboard-first tour guide with a highlight ring, built on [`speak-friend`](../core). Screen reader friendly, and it leaves the page usable. It does not dim it unless you ask. Demo and workbench: https://speak-friend.dont-mind-ai.com/
 
 ```tsx
 import { TourGuide, TourProvider, useTours } from "speak-friend-react";
@@ -37,7 +37,8 @@ await tours.start("welcome");
 
 - The guide docks at the bottom, on the `end` side by default (`position="start"` mirrors it). On narrow screens it
   becomes a bottom sheet.
-- A ring marks the target. The page is not dimmed and stays usable.
+- A ring marks the target. The page stays usable.
+- `dim` is off by default. Turn it on and the page around the ring gets a light tint. It is only a tint: clicks, focus and the keyboard are not affected and nothing is made inert. It is left out when the person asks for more contrast (`prefers-contrast: more`) or less transparency (`prefers-reduced-transparency`), and in forced-colors mode, where the ring remains. Change the strength with `--sf-dim`.
 - The guide is non-modal: it is a `role="dialog"` without `aria-modal`, nothing traps focus, and Tab leaves it after its last button and continues into the page.
 - `theme` overrides the system setting in both directions: `theme="dark"` stays dark on a light system and `theme="light"` stays light on a dark one.
 - Focus moves to the step title on every step. `announce="live"` keeps focus and announces the step instead.
@@ -80,6 +81,7 @@ return <button onClick={() => tours.start("welcome")}>{progress?.status === "sta
 | `closeOnEscape` | `true`   |                                                                                                                    |
 | `fallbackFocus` |          | Where focus goes when the tour ends and the element that started it is gone. Default: the first `h1`, then `main`. |
 | `container`     |          | Function returning the element the guide and ring mount in, for example an open modal `<dialog>`. Default `body`.  |
+| `dim`           | `false`  | Tint the page around the ring. Never blocks the page.                                                              |
 | `className`     |          | Added to the guide.                                                                                                |
 
 ## Styling

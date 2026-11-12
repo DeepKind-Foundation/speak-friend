@@ -4,6 +4,11 @@ import { componentCode, stylesheetCode, stylesheetCss } from "../src/workbench/c
 import { defaults } from "../src/workbench/options";
 
 describe("componentCode", () => {
+  it("shows a bare dim prop only while dimming is on", () => {
+    expect(toText(componentCode({ ...defaults, dim: "on" }))).toContain('announce="focus"\n  dim\n/>');
+    expect(toText(componentCode(defaults))).not.toContain("dim");
+  });
+
   it("shows the position and announce props, and no theme while the theme follows the system", () => {
     expect(toText(componentCode(defaults))).toBe(
       '<TourGuide\n  labels={labels}\n  position="end"\n  announce="focus"\n/>',

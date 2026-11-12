@@ -58,6 +58,7 @@ export function WorkbenchPage(): JSX.Element {
         labels={labels}
         position={options.position}
         announce={options.announce}
+        dim={options.dim === "on"}
         theme={options.theme === "system" ? undefined : options.theme}
       />
     </TourProvider>

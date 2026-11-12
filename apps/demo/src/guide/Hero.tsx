@@ -17,8 +17,8 @@ export function Hero(): JSX.Element {
         <p className="eyebrow">speak-friend-react</p>
         <h1>Page tours that leave the page usable.</h1>
         <p>
-          A small engine and a docked guide for React. It speaks to screen readers, obeys the keyboard and never dims
-          the thing you are pointing at.
+          A small engine and a docked guide for React. It speaks to screen readers, obeys the keyboard and keeps the
+          page you are pointing at usable.
         </p>
         <div className="hero-actions">
           <button type="button" className="button" onClick={start}>

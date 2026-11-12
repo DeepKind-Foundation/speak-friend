@@ -1,6 +1,6 @@
 # Speak, Friend
 
-A small React library for accessible product tours and onboarding walkthroughs: a headless engine and a docked guide that never dims the page. Keyboard first, screen reader friendly, reduced motion respected, and the library has no text of its own.
+A small React library for accessible product tours and onboarding walkthroughs: a headless engine and a docked guide that leaves the page usable and does not dim it unless you ask. Keyboard first, screen reader friendly, reduced motion respected, and the library has no text of its own.
 
 Demo and workbench: https://speak-friend.dont-mind-ai.com/
 

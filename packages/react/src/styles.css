@@ -11,6 +11,7 @@
   --sf-primary-edge: light-dark(oklch(53% 0.13 125), transparent);
   --sf-done: light-dark(oklch(53% 0.13 125), oklch(81% 0.16 125));
   --sf-halo: light-dark(oklch(100% 0 0), oklch(19% 0.02 285));
+  --sf-dim: light-dark(oklch(0% 0 0 / 0.3), oklch(0% 0 0 / 0.45));
 }
 
 .sf-guide[data-theme="light"],
@@ -40,6 +41,19 @@
   outline: 3px solid var(--sf-accent);
   outline-offset: 4px;
   box-shadow: 0 0 0 4px var(--sf-halo);
+}
+
+/* The tint is the ring's own shadow spread past the window, so the ring's box is the cut-out. */
+.sf-ring[data-dim] {
+  box-shadow:
+    0 0 0 4px var(--sf-halo),
+    0 0 0 100vmax var(--sf-dim);
+}
+
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .sf-ring[data-dim] {
+    box-shadow: 0 0 0 4px var(--sf-halo);
+  }
 }
 
 .sf-guide {

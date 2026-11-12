@@ -81,6 +81,19 @@
   inset: 0;
 }
 
+/* Before the tour starts the guide is a picture of itself, so it must not look like it can be pressed. */
+.stage-screen .sf-guide[inert] .sf-button {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stage-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
 .host-side {
   display: grid;
   gap: var(--space-2);

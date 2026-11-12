@@ -31,6 +31,7 @@ function Preview({ options }: { options: Options }): JSX.Element {
           <span className="sf-button sf-primary">Next</span>
           <span className="sf-button sf-quiet">Close</span>
         </div>
+        <p className="stage-note">Preview only. Press Start tour to use it.</p>
       </div>
     </section>
   );

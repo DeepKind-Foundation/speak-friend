@@ -35,9 +35,14 @@ describe("the other files", () => {
     expect(text).toContain("data-tour");
   });
 
-  it("index.html carries the direction", () => {
-    expect(fileText("index.html", defaults)).toBe('<html lang="en">');
-    expect(fileText("index.html", { ...defaults, direction: "rtl" })).toBe('<html lang="en" dir="rtl">');
+  it("index.html is a whole page that carries the direction", () => {
+    const html = fileText("index.html", defaults);
+    expect(html.split("\n")).toContain('<html lang="en">');
+    for (const part of ["<!doctype html>", "<head>", '<div id="root"></div>', "src/main.tsx", "</html>"])
+      expect(html).toContain(part);
+    expect(fileText("index.html", { ...defaults, direction: "rtl" }).split("\n")).toContain(
+      '<html lang="en" dir="rtl">',
+    );
   });
 
   it("has code for every file name", () => {

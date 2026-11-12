@@ -67,7 +67,21 @@ const tourSource = (): string =>
     "};",
   ].join("\n");
 
-const htmlSource = (o: Options): string => (o.direction === "rtl" ? '<html lang="en" dir="rtl">' : '<html lang="en">');
+const htmlSource = (o: Options): string =>
+  [
+    "<!doctype html>",
+    o.direction === "rtl" ? '<html lang="en" dir="rtl">' : '<html lang="en">',
+    "  <head>",
+    '    <meta charset="utf-8" />',
+    '    <meta name="viewport" content="width=device-width, initial-scale=1" />',
+    "    <title>Your app</title>",
+    "  </head>",
+    "  <body>",
+    '    <div id="root"></div>',
+    '    <script type="module" src="/src/main.tsx"></script>',
+    "  </body>",
+    "</html>",
+  ].join("\n");
 
 /** The stylesheet that gives the guide the chosen colours. */
 export function stylesheetCode(skin: SkinName): CodeLines {

@@ -33,6 +33,12 @@ export interface TourGuideProps {
    * level 1 heading, then `main`.
    */
   fallbackFocus?: () => HTMLElement | null;
+  /**
+   * Where the guide and ring are mounted. Default `document.body`. A page that opens a modal `<dialog>` with
+   * `showModal()` makes everything outside the dialog unreachable, including the guide, so return that dialog here
+   * while it is open. Called on every render while a tour runs.
+   */
+  container?: () => HTMLElement | null;
   className?: string;
 }
 
@@ -53,6 +59,7 @@ export function TourGuide({
   announce = "focus",
   closeOnEscape = true,
   fallbackFocus,
+  container,
   className,
 }: TourGuideProps): JSX.Element | null {
   const tours = useTours();
@@ -100,20 +107,28 @@ export function TourGuide({
     el.scrollIntoView({ block: tall ? "start" : "center", behavior: reducedMotion() ? "auto" : "smooth" });
   }, [running, state.step]);
 
-  // Keep focused elements clear of the dock (WCAG 2.4.11).
+  // Keep focused elements clear of the dock (WCAG 2.4.11). Scroll padding moves them out from under it; the extra
+  // padding at the end of the page gives the last ones room to move into.
   useEffect(() => {
     const guide = guideRef.current;
     if (!running || !guide) return;
-    const style = document.documentElement.style;
-    const before = style.getPropertyValue("scroll-padding-bottom");
-    const apply = (): void => style.setProperty("scroll-padding-bottom", `${guide.offsetHeight + CLEARANCE}px`);
+    const root = document.documentElement;
+    const own = parseFloat(getComputedStyle(root).paddingBottom) || 0;
+    const restore = (["scroll-padding-bottom", "padding-bottom"] as const).map((name) => {
+      const before = root.style.getPropertyValue(name);
+      return () => (before ? root.style.setProperty(name, before) : root.style.removeProperty(name));
+    });
+    const apply = (): void => {
+      const room = guide.offsetHeight + CLEARANCE;
+      root.style.setProperty("scroll-padding-bottom", `${room}px`);
+      root.style.setProperty("padding-bottom", `${own + room}px`);
+    };
     apply();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(apply);
     observer?.observe(guide);
     return () => {
       observer?.disconnect();
-      if (before) style.setProperty("scroll-padding-bottom", before);
-      else style.removeProperty("scroll-padding-bottom");
+      restore.forEach((undo) => undo());
     };
   }, [running]);
 
@@ -130,10 +145,11 @@ export function TourGuide({
   const { step, index, total } = state;
   const last = index === total - 1;
   const counter = labels.counter(index + 1, total);
+  const host = container?.() ?? document.body;
 
   return (
     <>
-      <Ring key={step.id} target={step.target} theme={theme} />
+      <Ring key={step.id} target={step.target} theme={theme} container={host} />
       {createPortal(
         <section
           ref={guideRef}
@@ -172,7 +188,7 @@ export function TourGuide({
             </div>
           )}
         </section>,
-        document.body,
+        host,
       )}
     </>
   );

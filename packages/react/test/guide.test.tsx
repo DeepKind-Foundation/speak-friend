@@ -329,6 +329,20 @@ describe("the guide", () => {
     await waitFor(() => expect(document.documentElement.style.getPropertyValue("scroll-padding-bottom")).toBe(""));
   });
 
+  it("adds room at the end of the page for the dock and gives back the page's own padding", async () => {
+    document.documentElement.style.setProperty("padding-bottom", "7px");
+    setup();
+    await begin();
+    expect(parseFloat(document.documentElement.style.getPropertyValue("padding-bottom"))).toBeGreaterThanOrEqual(
+      7 + 24,
+    );
+    await act(async () => {
+      fireEvent.keyDown(document, { key: "Escape" });
+    });
+    await waitFor(() => expect(document.documentElement.style.getPropertyValue("padding-bottom")).toBe("7px"));
+    document.documentElement.style.removeProperty("padding-bottom");
+  });
+
   it("shows only the text the app supplies", async () => {
     setup();
     await begin();

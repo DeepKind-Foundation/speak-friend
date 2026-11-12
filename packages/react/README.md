@@ -41,10 +41,11 @@ await tours.start("welcome");
 - The guide is non-modal: it is a `role="dialog"` without `aria-modal`, nothing traps focus, and Tab leaves it after its last button and continues into the page.
 - `theme` overrides the system setting in both directions: `theme="dark"` stays dark on a light system and `theme="light"` stays light on a dark one.
 - Focus moves to the step title on every step. `announce="live"` keeps focus and announces the step instead.
-- Escape closes the tour and returns focus to where it was. Starting again resumes from the same step. If that element is no longer on the page, focus goes to `fallbackFocus`, then the first `h1`, then `main`.
+- Every way a tour can end (Escape, the close button, finishing, `close()` from your code, the last targets disappearing, the guide unmounting) returns focus to where it was. Starting again resumes from the same step. If that element is no longer on the page, focus goes to `fallbackFocus`, then the first `h1`, then `main`.
 - A step whose target is not on the page is skipped and leaves the count.
 - A target larger than the window is scrolled to its top and ringed where it can be seen. The ring is clipped to the window, with room for its outline, and is not drawn while none of the target is on screen. Small targets work best on phones, where the guide covers the lower part of the screen.
-- While the guide is open, `scroll-padding-bottom` keeps focused elements clear of it.
+- While the guide is open, `scroll-padding-bottom` and extra padding at the end of the page keep focused elements clear of it, including the last ones on the page.
+- A page that opens a modal `<dialog>` with `showModal()` makes everything outside it unreachable, the guide included. Pass `container={() => document.querySelector("dialog[open]")}` and the guide and ring mount inside it. A page that only sets `inert` on its own root is fine: the guide sits next to the root.
 - Name a target once per page. A name used on two pages can match the old page's element while the route changes, so a step can be shown before the new page has rendered. The ring looks its target up again on every layout change, so it follows the new element when one with that name appears.
 
 ## Reading progress
@@ -78,6 +79,7 @@ return <button onClick={() => tours.start("welcome")}>{progress?.status === "sta
 | `announce`      | `focus`  | `focus` or `live`.                                                                                                 |
 | `closeOnEscape` | `true`   |                                                                                                                    |
 | `fallbackFocus` |          | Where focus goes when the tour ends and the element that started it is gone. Default: the first `h1`, then `main`. |
+| `container`     |          | Function returning the element the guide and ring mount in, for example an open modal `<dialog>`. Default `body`.  |
 | `className`     |          | Added to the guide.                                                                                                |
 
 ## Styling

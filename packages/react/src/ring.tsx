@@ -73,7 +73,15 @@ function useBox(target: string): Box | null {
 }
 
 /** A ring around the element marked `data-tour="<target>"`. It never blocks pointer events. */
-export function Ring({ target, theme }: { target: string; theme?: "light" | "dark" }): JSX.Element | null {
+export function Ring({
+  target,
+  theme,
+  container,
+}: {
+  target: string;
+  theme?: "light" | "dark";
+  container: HTMLElement;
+}): JSX.Element | null {
   const box = useBox(target);
   if (!box || typeof document === "undefined") return null;
   return createPortal(
@@ -83,6 +91,6 @@ export function Ring({ target, theme }: { target: string; theme?: "light" | "dar
       aria-hidden="true"
       style={{ top: box.top, left: box.left, width: box.width, height: box.height }}
     />,
-    document.body,
+    container,
   );
 }

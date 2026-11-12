@@ -1,7 +1,7 @@
 # speak-friend
 
-Headless engine for page tours: tours, chapters, steps, roles and progress. No DOM, no React. Built with a focus on
-accessibility; for React see [`speak-friend-react`](https://www.npmjs.com/package/speak-friend-react).
+Headless engine for accessible product tours and onboarding walkthroughs: tours, chapters, steps, roles and progress. No
+DOM, no React. For React see [`speak-friend-react`](https://www.npmjs.com/package/speak-friend-react). Demo: https://speak-friend.dont-mind-ai.com/
 
 ```ts
 import { createTours, memoryStore } from "speak-friend";

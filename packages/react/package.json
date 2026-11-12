@@ -1,6 +1,6 @@
 {
   "name": "speak-friend-react",
-  "version": "0.1.0-alpha.4",
+  "version": "0.1.0-alpha.5",
   "description": "Accessible product tours for React: a docked, keyboard-first tour guide with a highlight ring that never dims the page. Screen reader friendly.",
   "license": "MIT",
   "repository": {

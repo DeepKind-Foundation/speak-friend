@@ -25,19 +25,20 @@ function structuredData(id: PageId): object[] {
       },
     ];
   }
+  const docs = id === "docs";
   return [
     {
       "@context": context,
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Speak, Friend", item: pageUrl("guide") },
-        { "@type": "ListItem", position: 2, name: "Workbench", item: pageUrl(id) },
+        { "@type": "ListItem", position: 2, name: docs ? "Documentation" : "Workbench", item: pageUrl(id) },
       ],
     },
     {
       "@context": context,
       "@type": "WebPage",
-      name: "React tour guide workbench",
+      name: docs ? "React tour guide documentation" : "React tour guide workbench",
       description: title,
       url: pageUrl(id),
       isPartOf: { "@type": "WebSite", name: "Speak, Friend", url: pageUrl("guide") },

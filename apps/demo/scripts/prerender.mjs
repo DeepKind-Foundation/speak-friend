@@ -9,7 +9,7 @@ const dist = resolve(app, "dist");
 const ssr = resolve(app, "dist-ssr");
 const ROOT = '<div id="root"></div>';
 
-const { renderGuide, renderWorkbench, llmsTxt, robotsTxt, sitemapXml } = await import(
+const { renderGuide, renderDocs, renderWorkbench, llmsTxt, robotsTxt, sitemapXml } = await import(
   pathToFileURL(resolve(ssr, "entry-server.js")).href
 );
 
@@ -26,6 +26,7 @@ async function inject(file, html) {
 }
 
 await inject("index.html", renderGuide());
+await inject("docs/index.html", renderDocs());
 await inject("workbench/index.html", renderWorkbench());
 await writeFile(resolve(dist, "llms.txt"), llmsTxt());
 await writeFile(resolve(dist, "robots.txt"), robotsTxt());

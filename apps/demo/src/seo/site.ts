@@ -23,6 +23,12 @@ export const PAGES = {
     description:
       "A small React library for accessible product tours and onboarding walkthroughs. Keyboard first, screen reader friendly, and it dims the page only if you ask.",
   },
+  docs: {
+    path: "/docs/",
+    title: "Documentation for the React tour guide | Speak, Friend",
+    description:
+      "How to point a tour step into a web component or an iframe, save and resume progress, use the keyboard, and what the guide does not cover yet.",
+  },
   workbench: {
     path: "/workbench/",
     title: "React tour guide workbench | Speak, Friend",

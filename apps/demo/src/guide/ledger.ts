@@ -13,10 +13,10 @@ export const ledger: readonly LedgerEntry[] = [
     id: "keyboard",
     term: "Keyboard",
     description:
-      "Escape closes the tour and returns focus to where you were. Tab leaves the guide whenever you want, because nothing traps it.",
+      "Escape closes the tour from the guide and returns focus to where you were, while Escape in a page control stays the page's. Tab leaves the guide whenever you want, because nothing traps it.",
     stepTitle: "You stay in control of the keyboard",
     stepBody:
-      "Press Escape to close the tour. Focus goes back to the button you used to start it. Tab can leave the guide at any time.",
+      "Press Escape in the guide to close the tour. Focus goes back to the button you used to start it. Tab can leave the guide at any time, and the first Tab stop in the page brings you back.",
   },
   {
     id: "screen-readers",

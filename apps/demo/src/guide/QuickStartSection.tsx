@@ -44,7 +44,8 @@ export function QuickStart(): JSX.Element {
         <p>
           React 18 or later, and a bundler that handles ES modules. Both packages are MIT licensed and in alpha, so the
           API can still change. The <a href="./workbench/">workbench</a> lets you try every option and see the code it
-          produces.
+          produces. The <a href="./docs/">documentation</a> covers targets inside web components and iframes, saving
+          progress and the keyboard.
         </p>
         <ul className="links">
           <li>

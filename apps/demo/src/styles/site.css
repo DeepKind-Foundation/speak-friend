@@ -255,6 +255,24 @@ h1 {
   margin: 0;
 }
 
+.docs-title {
+  margin: var(--space-12) 0 var(--space-4);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.docs-lead {
+  max-width: 70ch;
+  margin: 0 0 var(--space-6);
+}
+
+.docs-contents {
+  max-width: 900px;
+}
+
 .doc + .ledger {
   margin-block-start: var(--space-4);
 }

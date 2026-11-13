@@ -20,7 +20,7 @@ export default defineConfig({
   plugins: [react(), seoHead()],
   build: {
     rollupOptions: {
-      input: { guide: page("index.html"), workbench: page("workbench/index.html") },
+      input: { guide: page("index.html"), docs: page("docs/index.html"), workbench: page("workbench/index.html") },
     },
   },
 });

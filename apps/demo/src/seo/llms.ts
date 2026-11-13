@@ -29,6 +29,7 @@ ${quickStart.code}
 ## Links
 
 - [Guide and quick start](${pageUrl("guide")}): what it does, the example above and the props of the guide
+- [Documentation](${pageUrl("docs")}): targets in web components and iframes, saving and resuming progress, the keyboard, and what is not covered
 - [Workbench](${pageUrl("workbench")}): try every option in a sample app and copy the complete code for your choices
 - [speak-friend on npm](${NPM.engine}): the engine
 - [speak-friend-react on npm](${NPM.react}): the guide for React

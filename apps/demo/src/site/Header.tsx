@@ -2,12 +2,13 @@ import type { JSX } from "react";
 import { REPO } from "../seo/site";
 
 /** Pages of the demo, in nav order. */
-export type PageId = "guide" | "workbench";
+export type PageId = "guide" | "docs" | "workbench";
 
 /** Where each page lives, as seen from each page. Relative, so the site works under any path. */
 const HREFS: Record<PageId, Record<PageId, string>> = {
-  guide: { guide: "./", workbench: "./workbench/" },
-  workbench: { guide: "../", workbench: "./" },
+  guide: { guide: "./", docs: "./docs/", workbench: "./workbench/" },
+  docs: { guide: "../", docs: "./", workbench: "../workbench/" },
+  workbench: { guide: "../", docs: "../docs/", workbench: "./" },
 };
 
 /** Wordmark and navigation shared by every page. */
@@ -26,6 +27,7 @@ export function Header({ current }: { current: PageId }): JSX.Element {
       </a>
       <nav aria-label="Demo">
         {link("guide", "Guide")}
+        {link("docs", "Docs")}
         {link("workbench", "Workbench")}
         <a href={REPO}>GitHub</a>
       </nav>

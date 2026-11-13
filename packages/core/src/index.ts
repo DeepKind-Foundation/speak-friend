@@ -6,9 +6,10 @@ export interface Step<C = unknown> {
   /** Value of the target element's `data-tour` attribute. */
   target: string;
   /**
-   * Where to look when the target is inside a web component: a CSS selector for the host element, or a path of
-   * selectors from the page inward for components inside components. Only that component's open shadow tree is
-   * searched, so a name used elsewhere on the page is never matched by mistake. Without it the page is searched.
+   * Where to look when the target is inside a web component or an iframe: a CSS selector for the host element, or a
+   * path of selectors from the page inward for hosts inside hosts. Only that host's open shadow tree, or the
+   * same-origin document of that iframe, is searched, so a name used elsewhere on the page is never matched by
+   * mistake. Without it the page is searched.
    * `speak-friend-react` uses it; the engine only carries it.
    */
   within?: string | readonly string[];

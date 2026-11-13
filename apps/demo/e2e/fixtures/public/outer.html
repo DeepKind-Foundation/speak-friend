@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Outer frame</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px 16px;
+        font:
+          16px system-ui,
+          sans-serif;
+      }
+      iframe {
+        border: 3px solid #666;
+        width: 320px;
+        height: 220px;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <p>A frame with a frame in it</p>
+    <iframe id="inner" src="./frame.html"></iframe>
+  </body>
+</html>

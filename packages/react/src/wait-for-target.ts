@@ -63,7 +63,7 @@ export function waitForScoped(
       resolve(outcome);
     };
     // Mutations inside a shadow tree do not reach an observer on the page, so each root that is searched is watched too.
-    const watch = (roots: readonly ShadowRoot[]): void => {
+    const watch = (roots: readonly (ShadowRoot | Document)[]): void => {
       for (const root of roots) {
         if (watched.has(root)) continue;
         watched.add(root);

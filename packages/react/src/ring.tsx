@@ -1,5 +1,6 @@
 import { useEffect, useState, type JSX } from "react";
 import { createPortal } from "react-dom";
+import { boxOf } from "./box.js";
 import { lookup, useStableWithin, type Within } from "./scope.js";
 
 /** The outline, its offset and the halo reach about 7px outside the box, so the box stays this far from the window edge. */
@@ -25,9 +26,10 @@ function useBox(target: string, within: Within | undefined): Box | null {
   useEffect(() => {
     let frame = 0;
     let observed: HTMLElement | null = null;
-    // Shadow roots the target is searched in. Scrolling and changes inside them do not reach the page, so they are
-    // listened to as well.
-    const roots = new Set<ShadowRoot>();
+    // Shadow roots and frame documents the target is searched in. Scrolling and changes inside them do not reach the
+    // page, so they are listened to as well. Frames are watched for their size and for loading a new document.
+    const roots = new Set<ShadowRoot | Document>();
+    const frames = new Set<HTMLIFrameElement>();
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => schedule());
     const mutations = new MutationObserver(() => schedule());
     const measure = (): void => {
@@ -40,6 +42,12 @@ function useBox(target: string, within: Within | undefined): Box | null {
         root.addEventListener("scroll", schedule, { capture: true, passive: true });
         mutations.observe(root, { childList: true, subtree: true, attributes: true });
       }
+      for (const frame of found.frames) {
+        if (frames.has(frame)) continue;
+        frames.add(frame);
+        observer?.observe(frame);
+        frame.addEventListener("load", schedule);
+      }
       if (el !== observed) {
         if (observed) observer?.unobserve(observed);
         if (el) observer?.observe(el);
@@ -49,7 +57,7 @@ function useBox(target: string, within: Within | undefined): Box | null {
         setBox(null);
         return;
       }
-      const r = el.getBoundingClientRect();
+      const r = boxOf(el);
       const top = Math.max(r.top, INSET);
       const left = Math.max(r.left, INSET);
       const height = Math.min(r.bottom, window.innerHeight - INSET) - top;
@@ -78,6 +86,7 @@ function useBox(target: string, within: Within | undefined): Box | null {
       observer?.disconnect();
       mutations.disconnect();
       roots.forEach((root) => root.removeEventListener("scroll", schedule, { capture: true }));
+      frames.forEach((frame) => frame.removeEventListener("load", schedule));
       if (frame) cancelAnimationFrame(frame);
     };
   }, [target, scope]);

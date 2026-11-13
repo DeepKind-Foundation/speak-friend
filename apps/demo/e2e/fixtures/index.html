@@ -29,6 +29,28 @@
       <x-wrap id="wrap" style="display: contents"></x-wrap>
       <x-scroller id="scroller"></x-scroller>
       <x-closed id="closed"></x-closed>
+      <!-- Same-origin frames: plain, with a border and padding, scaled on screen, inside a frame, hidden. -->
+      <iframe
+        id="frame"
+        src="./frame.html"
+        style="width: 340px; height: 260px; border: 6px solid #666; padding: 5px"
+      ></iframe>
+      <iframe
+        id="scaled"
+        src="./frame.html"
+        style="
+          width: 400px;
+          height: 300px;
+          border: 4px solid #666;
+          transform: scale(0.5);
+          transform-origin: top left;
+          margin-bottom: -150px;
+        "
+      ></iframe>
+      <iframe id="outer" src="./outer.html" style="width: 420px; height: 330px; border: 0"></iframe>
+      <iframe id="hiddenframe" src="./frame.html" style="display: none"></iframe>
+      <!-- A different origin: the same server under another host name. Its document cannot be read. -->
+      <iframe id="foreign" src="http://127.0.0.1:4174/frame.html" style="width: 200px; height: 80px"></iframe>
       <div class="spacer"></div>
       <x-card id="card-b"></x-card>
       <div class="spacer"></div>

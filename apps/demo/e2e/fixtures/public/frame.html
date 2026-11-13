@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Frame</title>
+    <style>
+      body {
+        margin: 0;
+        font:
+          16px system-ui,
+          sans-serif;
+        height: 1600px;
+      }
+      #content {
+        padding: 24px 12px;
+      }
+      button,
+      input {
+        font: inherit;
+        margin: 4px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="content">
+      <p>Inside the frame</p>
+      <button data-tour="inframe" id="inframe">Inside the frame</button>
+      <br />
+      <input id="field" aria-label="A field in the frame" />
+    </div>
+  </body>
+</html>

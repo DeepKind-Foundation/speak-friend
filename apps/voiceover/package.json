@@ -1,0 +1,19 @@
+{
+  "name": "speak-friend-screen-reader-voiceover",
+  "private": true,
+  "version": "0.0.0",
+  "description": "VoiceOver tests for the guide, run only on a GitHub-hosted macOS runner. Kept apart so no release or deploy job installs its dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "voiceover": "playwright test",
+    "voiceover:types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@guidepup/guidepup": "0.40.0",
+    "@guidepup/playwright": "0.21.0",
+    "@guidepup/setup": "0.29.3",
+    "@playwright/test": "1.65.0",
+    "@types/node": "22.19.1"
+  }
+}

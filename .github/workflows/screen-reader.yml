@@ -1,9 +1,8 @@
 name: Screen reader
 
-# Everything that needs a screen reader, simulated or real, lives here and not in ci.yml, so its dependencies and any
-# machine setup stay out of the workflows that build, deploy and publish. No job here may use secrets or an
-# environment. Real screen readers (which need @guidepup/setup and change system permissions) are only ever to run on
-# GitHub-hosted runners, never on a self-hosted one.
+# The simulated screen reader lives here and not in ci.yml, so its dependencies stay out of the workflows that build,
+# deploy and publish. No job here may use secrets or an environment. Real screen readers change system permissions and
+# have their own workflow (voiceover.yml), which is never run for pull requests.
 on:
   push:
     branches: [main]
@@ -28,6 +27,9 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
-      - run: pnpm install --frozen-lockfile
+      # Only this workspace and the packages it tests: the real screen reader packages are not installed here.
+      - run: pnpm install --frozen-lockfile --filter 'speak-friend-screen-reader...'
+      - name: Fail if the VoiceOver dependencies were installed
+        run: test ! -e apps/voiceover/node_modules
       - run: pnpm --filter speak-friend-screen-reader screen-reader:types
       - run: pnpm --filter speak-friend-screen-reader screen-reader

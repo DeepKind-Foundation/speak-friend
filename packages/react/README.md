@@ -49,6 +49,8 @@ await tours.start("welcome");
 - While the guide is open, `scroll-padding-bottom` and extra padding at the end of the page keep focused elements clear of it, including the last ones on the page.
 - A page that opens a modal `<dialog>` with `showModal()` makes everything outside it unreachable, the guide included. Pass `container={() => document.querySelector("dialog[open]")}` and the guide and ring mount inside it. A page that only sets `inert` on its own root is fine: the guide sits next to the root.
 - A target name can be used on more than one page. After `navigate`, an element that was already on the page counts as the target only once the page has stopped changing for 300 ms; a new element counts at once. So the old page's copy is not taken for the new page's, and an element that really stays, such as a header, is found after a short pause. If your route takes longer to render than that, make `navigate` return a promise that resolves when the new page is on screen.
+- Escape closes the tour when focus is in the guide or nowhere in particular, and leaves it to the page when focus is in a page control, so a dropdown or dialog in the app can still use Escape. `closeOnEscape="anywhere"` restores closing on every Escape.
+- `labels.returnToGuide` adds a button that is the first thing Tab reaches in the page while a step is shown. It is only visible while it has focus, and it moves focus back to the guide. The guide itself is last in the page, so without it someone who tabs away has to go through the rest of the page to return. Without the label there is no button. The button sits in a wrapper that is added as the first child of the container (or of `body`) and takes no part in layout, but it does count as a child, so a `:first-child` or `:nth-child` rule on that container sees one more.
 - While the next step takes a moment (100 ms or more), the guide stays on the current step, is marked `aria-busy`, and shows `labels.waiting` in a live region if you gave one. The same goes for the first step: if its target is not on the page yet, a small panel with `labels.waiting` and a Close button appears after 100 ms, Escape closes it, and it gives way to the guide when the step arrives. Without `labels.waiting` nothing is shown until then.
 - The guide keeps clear of the element it points at. Once the page has scrolled to it, a guide that would cover it moves to the other side, then to the top edge; if nothing is clear it stays where you put it. The ring follows the element on every layout change.
 
@@ -67,7 +69,7 @@ A step finds its target with `document.querySelector`, which cannot see inside a
 - Focus given back at the end of a tour goes to the inner element when the tour was started from inside a component, once any step uses `within`.
 - An element that is slotted into a component from the page is in the page, so a step finds it without `within`.
 - `Ring` takes the same `within` prop.
-- An iframe works when its document is from the same origin. The ring and the guide's placement account for the frame's position, border, padding and scaling, also for frames inside frames. A frame from another origin, or one that has not loaded, cannot be read: the step is skipped and `onError` says so. Escape also closes the tour while focus is inside a frame the step looks into, and focus given back at the end goes into the frame when the tour was started from inside it.
+- An iframe works when its document is from the same origin. The ring and the guide's placement account for the frame's position, border, padding and scaling, also for frames inside frames. A frame from another origin, or one that has not loaded, cannot be read: the step is skipped and `onError` says so. Focus given back at the end goes into the frame when the tour was started from inside it.
 - A tour that runs inside an iframe and points at the page around it is not supported.
 
 ## Reading progress
@@ -96,18 +98,18 @@ If the store cannot be read or saved, the tour still runs and `onError` is calle
 
 ## Props of `TourGuide`
 
-| Prop            | Default  | Description                                                                                                        |
-| --------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
-| `labels`        | required | Every string: `counter`, `back`, `next`, `finish`, `close`, and optionally `waiting`.                              |
-| `position`      | `end`    | `start` or `end`.                                                                                                  |
-| `theme`         |          | `light` or `dark` forces a theme. Default: follows the OS.                                                         |
-| `headingLevel`  | `2`      | Heading level of the step title.                                                                                   |
-| `announce`      | `focus`  | `focus` or `live`.                                                                                                 |
-| `closeOnEscape` | `true`   |                                                                                                                    |
-| `fallbackFocus` |          | Where focus goes when the tour ends and the element that started it is gone. Default: the first `h1`, then `main`. |
-| `container`     |          | Function returning the element the guide and ring mount in, for example an open modal `<dialog>`. Default `body`.  |
-| `dim`           | `false`  | Tint the page around the ring. Never blocks the page.                                                              |
-| `className`     |          | Added to the guide.                                                                                                |
+| Prop            | Default  | Description                                                                                                                                                                                                                           |
+| --------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `labels`        | required | Every string: `counter`, `back`, `next`, `finish`, `close`, and optionally `waiting`.                                                                                                                                                 |
+| `position`      | `end`    | `start` or `end`.                                                                                                                                                                                                                     |
+| `theme`         |          | `light` or `dark` forces a theme. Default: follows the OS.                                                                                                                                                                            |
+| `headingLevel`  | `2`      | Heading level of the step title.                                                                                                                                                                                                      |
+| `announce`      | `focus`  | `focus` or `live`.                                                                                                                                                                                                                    |
+| `closeOnEscape` | `true`   | `true` closes the tour on Escape when focus is in the guide or nowhere in particular; Escape in a page control, dropdown or dialog stays the page's. `"anywhere"` closes it on any Escape nothing else handled. `false` turns it off. |
+| `fallbackFocus` |          | Where focus goes when the tour ends and the element that started it is gone. Default: the first `h1`, then `main`.                                                                                                                    |
+| `container`     |          | Function returning the element the guide and ring mount in, for example an open modal `<dialog>`. Default `body`.                                                                                                                     |
+| `dim`           | `false`  | Tint the page around the ring. Never blocks the page.                                                                                                                                                                                 |
+| `className`     |          | Added to the guide.                                                                                                                                                                                                                   |
 
 ## Styling
 

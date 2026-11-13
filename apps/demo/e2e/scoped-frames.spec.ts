@@ -91,11 +91,17 @@ test("scrolling the frame's own document moves the ring", async ({ page }) => {
   expect(Math.abs(before.top - after.top)).toBeGreaterThanOrEqual(20);
 });
 
-test("Escape closes the tour while focus is inside the frame", async ({ page }) => {
+test("Escape in a frame the page owns does not close the tour; Escape in the guide does", async ({ page }) => {
   await open(page, "frame");
   await expect(page.getByRole("dialog")).toBeVisible();
   await settled(page);
   await page.frameLocator("#frame").locator("#field").focus();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: /Next|Finish/ })
+    .focus();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
 });

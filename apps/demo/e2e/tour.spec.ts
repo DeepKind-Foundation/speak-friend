@@ -168,3 +168,30 @@ test("on a phone the guide spans the width of the window", async ({ page, isMobi
   expect(left).toBe(0);
   expect(right).toBe(width);
 });
+
+test("Escape in the page belongs to the page; Escape in the guide closes the tour", async ({ page }) => {
+  await open(page);
+  const guide = page.getByRole("dialog");
+  await page.getByRole("link", { name: "Workbench" }).first().focus();
+  await page.keyboard.press("Escape");
+  await expect(guide).toBeVisible();
+  await guide.getByRole("button", { name: "Next" }).focus();
+  await page.keyboard.press("Escape");
+  await expect(guide).toBeHidden();
+});
+
+test("the first Tab stop is a button that brings focus back to the guide", async ({ page }) => {
+  await open(page);
+  const back = page.getByRole("button", { name: "Back to the tour" });
+  // Walk backwards from the top of the page: nothing may come before the button.
+  await page.locator(".wordmark").focus();
+  for (let i = 0; i < 4 && !(await back.evaluate((el) => el === document.activeElement)); i++) {
+    await page.keyboard.press("Shift+Tab");
+  }
+  await expect(back).toBeFocused();
+  const box = await back.boundingBox();
+  expect(box!.width).toBeGreaterThan(40);
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog").getByRole("heading")).toBeFocused();
+});

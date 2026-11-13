@@ -43,7 +43,7 @@ describe("the other files", () => {
   it("tour.ts has the same labels the stage uses", async () => {
     const { labels } = await import("../src/site/labels");
     const text = fileText("tour.ts", defaults);
-    for (const key of ["back", "next", "finish", "close", "waiting", "ended"] as const) {
+    for (const key of ["back", "next", "finish", "close", "waiting", "ended", "returnToGuide"] as const) {
       expect(text).toContain(`  ${key}: ${JSON.stringify(labels[key])},`);
     }
   });

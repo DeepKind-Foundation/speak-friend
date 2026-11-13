@@ -11,7 +11,7 @@ export const guideProps: readonly PropRow[] = [
     name: "labels",
     defaultValue: "required",
     description:
-      "Every string the guide shows: counter, back, next, finish and close. Optionally waiting, for a step that is taking a moment (the first one included), and ended, announced when the tour ends.",
+      "Every string the guide shows: counter, back, next, finish and close. Optionally waiting, for a step that is taking a moment (the first one included), ended, announced when the tour ends, and returnToGuide, the text of a button that is the first Tab stop and brings focus back to the guide.",
   },
   {
     name: "position",
@@ -32,6 +32,7 @@ export const guideProps: readonly PropRow[] = [
   {
     name: "closeOnEscape",
     defaultValue: "true",
-    description: "Closes the tour on Escape and returns focus to where it was.",
+    description:
+      'Closes the tour on Escape when focus is in the guide or nowhere in particular, and returns focus to where it was. Escape in a page control stays the page\'s. "anywhere" closes it on every Escape; false turns it off.',
   },
 ];

@@ -6,6 +6,7 @@ import {
   useId,
   useLayoutEffect,
   useRef,
+  useState,
   useSyncExternalStore,
 } from "react";
 import { createPortal } from "react-dom";
@@ -14,7 +15,7 @@ import { restoreFocus } from "./focus.js";
 import { Ring } from "./ring.js";
 import { useRun, useScoped, useTourState, useTours } from "./provider.js";
 import { boxOf } from "./box.js";
-import { deepActiveElement, lookup } from "./scope.js";
+import { deepActiveElement } from "./scope.js";
 import { findTarget } from "./wait-for-target.js";
 
 /** Every string the guide shows. The library has no text of its own. */
@@ -30,6 +31,11 @@ export interface GuideLabels {
   waiting?: string;
   /** Announced when the tour ends, whatever the reason, for example "Tour closed". Nothing is announced without it. */
   ended?: string;
+  /**
+   * Text of a button that is the first thing Tab reaches in the page while a step is shown and that moves focus back to
+   * the guide, for example "Back to the tour". It is only visible while it has focus. Without it there is no button.
+   */
+  returnToGuide?: string;
 }
 
 export interface TourGuideProps {
@@ -42,8 +48,12 @@ export interface TourGuideProps {
   headingLevel?: 2 | 3 | 4 | 5 | 6;
   /** `focus` moves focus to the step title; `live` keeps focus and announces the step. Default `focus`. */
   announce?: "focus" | "live";
-  /** Close the tour on Escape. Default true. */
-  closeOnEscape?: boolean;
+  /**
+   * Close the tour on Escape. `true` (the default) closes it when focus is in the guide or nowhere in particular, so
+   * Escape in a page control, dropdown or dialog still belongs to the page. `"anywhere"` closes it on every Escape
+   * that nothing else handled. `false` never closes it.
+   */
+  closeOnEscape?: boolean | "anywhere";
   /**
    * Where focus goes when the tour ends and the element that started it is no longer on the page. Default: the first
    * level 1 heading, then `main`.
@@ -197,20 +207,40 @@ export function TourGuide({
   useEffect(() => {
     if (!active || !closeOnEscape) return;
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === "Escape" && !e.defaultPrevented && !e.isComposing) run(tours.close());
+      if (e.key !== "Escape" || e.defaultPrevented || e.isComposing) return;
+      if (closeOnEscape !== "anywhere") {
+        // The real origin, also from inside a shadow tree. Escape in the page is the page's own.
+        const first = e.composedPath()[0];
+        const origin = first instanceof Element ? first : null;
+        const idle = origin === null || origin === document.body || origin === document.documentElement;
+        if (!idle && !origin.closest(".sf-guide, .sf-return")) return;
+      }
+      run(tours.close());
     };
     document.addEventListener("keydown", onKey);
-    // A key pressed inside an iframe never reaches this document, so the frames the step looks into listen as well.
-    const frames =
-      scoped && state.step
-        ? lookup(state.step.target, state.step.within).roots.filter((root): root is Document => root.nodeType === 9)
-        : [];
-    frames.forEach((doc) => doc.addEventListener("keydown", onKey));
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      frames.forEach((doc) => doc.removeEventListener("keydown", onKey));
-    };
-  }, [active, closeOnEscape, tours, run, scoped, state.step]);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [active, closeOnEscape, tours, run]);
+
+  // A button before everything else in the page that brings focus back to the guide. The guide itself is last in the
+  // page, so without it someone who tabs away has to go through the rest of the page to return.
+  // The wrapper takes no part in layout, so a container that is a grid or flex box does not give it a cell. It is an
+  // inline style on purpose: it must hold without styles.css.
+  const [returnHost] = useState<HTMLDivElement | null>(() => {
+    if (typeof document === "undefined") return null;
+    const el = document.createElement("div");
+    el.style.display = "contents";
+    return el;
+  });
+  const containerRef = useRef(container);
+  useLayoutEffect(() => {
+    containerRef.current = container;
+  }, [container]);
+  const wantsReturn = running && Boolean(labels.returnToGuide);
+  useEffect(() => {
+    if (!returnHost || !wantsReturn) return;
+    (containerRef.current?.() ?? document.body).prepend(returnHost);
+    return () => returnHost.remove();
+  }, [returnHost, wantsReturn]);
 
   if (!mounted) return null;
   const host = container?.() ?? document.body;
@@ -254,9 +284,25 @@ export function TourGuide({
   const last = index === total - 1;
   const counter = labels.counter(index + 1, total);
 
+  const returnButton =
+    returnHost && labels.returnToGuide
+      ? createPortal(
+          <button
+            type="button"
+            className="sf-return sf-button sf-primary"
+            data-theme={theme}
+            onClick={() => titleRef.current?.focus()}
+          >
+            {labels.returnToGuide}
+          </button>,
+          returnHost,
+        )
+      : null;
+
   return (
     <>
       {announcer}
+      {returnButton}
       <Ring key={step.id} target={step.target} within={step.within} theme={theme} dim={dim} container={host} />
       {createPortal(
         <section

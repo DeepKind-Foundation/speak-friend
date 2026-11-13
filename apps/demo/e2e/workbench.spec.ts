@@ -52,6 +52,24 @@ test("the running guide docks inside the frame and leaves the first target uncov
   expect(overlaps).toBe(false);
 });
 
+test("starting the tour does not move the sample app inside the frame", async ({ page }) => {
+  await open(page);
+  // Measured from the frame, because the page may scroll when the tour starts.
+  const inFrame = (): Promise<number[]> =>
+    page.evaluate(() => {
+      const frame = document.querySelector(".stage-screen")!.getBoundingClientRect();
+      const side = document.querySelector(".host-side")!.getBoundingClientRect();
+      return [side.x - frame.x, side.y - frame.y, side.width, side.height].map(Math.round);
+    });
+  const before = await inFrame();
+  await page.getByRole("button", { name: "Start tour" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await settled(page);
+  // The button is what could shift the layout, so make sure it is really in the frame.
+  await expect(page.locator(".stage-screen .sf-return")).toBeAttached();
+  expect(await inFrame()).toEqual(before);
+});
+
 test("Escape ends the tour and focus returns to Start tour", async ({ page }) => {
   await open(page);
   const start = page.getByRole("button", { name: "Start tour" });

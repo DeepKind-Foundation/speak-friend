@@ -1,5 +1,5 @@
 import { virtual } from "@guidepup/virtual-screen-reader";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { memoryStore, type Tour } from "speak-friend";
 import { TourGuide, TourProvider, useTours, type GuideLabels } from "speak-friend-react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -24,6 +24,7 @@ const labels: GuideLabels = {
   next: "Next",
   finish: "Finish",
   close: "Close",
+  waiting: "Waiting for the page",
   ended: "Tour closed",
   returnToGuide: "Back to the tour",
 };
@@ -58,19 +59,31 @@ afterEach(async () => {
   cleanup();
 });
 
-const open = async (): Promise<void> => {
+interface OpenOptions {
+  /** Props of the guide, on top of the labels. */
+  guide?: Partial<React.ComponentProps<typeof TourGuide>>;
+  /** The targets that are in the page; both by default. */
+  targets?: readonly ("first" | "second")[];
+  /** Milliseconds to wait for a target before its step is skipped. */
+  targetTimeout?: number;
+  /** Start the tour and wait for the guide to be a dialog. Without it only the button is pressed. */
+  settle?: boolean;
+}
+
+const open = async ({ guide, targets = ["first", "second"], targetTimeout, settle = true }: OpenOptions = {}) => {
   render(
-    <TourProvider tours={[tour]} store={memoryStore()} context={null}>
+    <TourProvider tours={[tour]} store={memoryStore()} context={null} targetTimeout={targetTimeout}>
       <Begin />
-      <div data-tour="first">first target</div>
-      <div data-tour="second">second target</div>
-      <TourGuide labels={labels} />
+      {targets.map((name) => (
+        <div key={name} data-tour={name}>{`${name} target`}</div>
+      ))}
+      <TourGuide labels={labels} {...guide} />
     </TourProvider>,
   );
   await act(async () => {
     fireEvent.click(screen.getByText("Take the tour"));
   });
-  await screen.findByRole("dialog");
+  if (settle) await screen.findByRole("dialog");
 };
 
 /** Everything a screen reader says while moving through the page from the top, one item at a time. */
@@ -146,5 +159,83 @@ describe("what a screen reader reads", () => {
     expect(status?.textContent).toBe("Tour closed");
     const log = await readPage();
     expect(log).toContain("Tour closed");
+  });
+
+  it("lets the person go back from the second step, and says Back is available", async () => {
+    await open();
+    await next();
+    const log = await readPage();
+    expect(log).toContain("button, Back");
+    expect(log).not.toContain("button, Back, disabled");
+  });
+
+  it("reads the title at the heading level the app asked for", async () => {
+    await open({ guide: { headingLevel: 4 } });
+    const log = await readPage();
+    expect(log).toContain("heading, Add a task, Step 1 of 2, level 4");
+  });
+});
+
+describe("how the step reaches the person", () => {
+  it("moves focus to the title, which is what makes it the first thing read", async () => {
+    await open();
+    expect(document.activeElement?.textContent).toBe("Add a task");
+    expect(document.activeElement?.getAttribute("aria-describedby")).toBeTruthy();
+  });
+
+  it("announces the step in the status region and leaves focus alone with announce live", async () => {
+    await open({ guide: { announce: "live" } });
+    expect(document.activeElement?.closest("[role=dialog]")).toBeNull();
+    expect(document.querySelector("[role=status]")?.textContent).toBe("Step 1 of 2: Add a task");
+    const log = await readPage();
+    expect(log).toContain("Step 1 of 2: Add a task");
+  });
+
+  it("says each new step in the same status region", async () => {
+    await open({ guide: { announce: "live" } });
+    const status = document.querySelector("[role=status]");
+    await next();
+    await waitFor(() => expect(status?.textContent).toBe("Step 2 of 2: Pick a day"));
+    expect(document.querySelector("[role=status]")).toBe(status);
+  });
+});
+
+describe("while the page is not ready", () => {
+  it("says that it is waiting, offers Close, and gives way to the guide when the target arrives", async () => {
+    await open({ targets: [], settle: false });
+    const waiting = await screen.findByRole("group", { name: "Waiting for the page" });
+    expect(waiting.getAttribute("aria-busy")).toBe("true");
+    expect(document.querySelector("[role=status]")?.textContent).toBe("Waiting for the page");
+    const log = await readPage();
+    // The hint is read both from the status region and from the busy group, and the way out is a labelled button.
+    expect(log).toContain("group, Waiting for the page, busy");
+    expect(log.filter((phrase) => phrase === "Waiting for the page").length).toBeGreaterThanOrEqual(2);
+    expect(log).toContain("button, Close");
+    await virtual.stop();
+
+    // Added by hand, so the test library does not clean it up.
+    const target = document.createElement("div");
+    target.dataset.tour = "first";
+    target.textContent = "first target";
+    try {
+      await act(async () => {
+        document.body.append(target);
+      });
+      expect(await screen.findByRole("dialog")).toBeTruthy();
+      expect(screen.queryByRole("group", { name: "Waiting for the page" })).toBeNull();
+      await waitFor(() => expect(document.querySelector("[role=status]")?.textContent).toBe(""));
+    } finally {
+      target.remove();
+    }
+  });
+
+  it("leaves a step out of the count when its target is not on the page", async () => {
+    await open({ targets: ["second"], targetTimeout: 50 });
+    // The first step is given up on after the timeout, so wait for the second to be the one shown.
+    await screen.findByRole("heading", { name: /Pick a day/ }, { timeout: 3000 });
+    const log = await readPage();
+    expect(log).toContain("heading, Pick a day, Step 1 of 1, level 2");
+    expect(log).not.toContain("heading, Add a task, Step 1 of 2, level 2");
+    expect(log).toContain("button, Finish");
   });
 });

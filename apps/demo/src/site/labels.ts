@@ -9,4 +9,5 @@ export const labels: GuideLabels = {
   close: "Close",
   waiting: "Waiting for the page",
   ended: "Tour closed",
+  returnToGuide: "Back to the tour",
 };

@@ -69,6 +69,7 @@ const tourSource = (): string =>
     // The strings the stage uses, so the code does what the page does.
     ...(labels.waiting ? [`  waiting: ${quote(labels.waiting)},`] : []),
     ...(labels.ended ? [`  ended: ${quote(labels.ended)},`] : []),
+    ...(labels.returnToGuide ? [`  returnToGuide: ${quote(labels.returnToGuide)},`] : []),
     "};",
   ].join("\n");
 

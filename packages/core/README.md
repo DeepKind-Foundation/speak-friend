@@ -32,7 +32,7 @@ tours.subscribe((state) => render(state)); // current step, position, total
 - Closing a tour keeps its position; starting it again resumes.
 - A tour dismissed twice (configurable) is no longer offered.
 - Raising a tour's `version` offers it again to users who finished an older one.
-- A step's optional `within` names the web component (a selector, or a list for components inside components) whose open shadow tree holds the target. The engine only carries it; `speak-friend-react` does the search.
+- A step's optional `within` names the web component or same-origin iframe (a selector, or a list for hosts inside hosts) that holds the target. The engine only carries it; `speak-friend-react` does the search.
 - Steps can be omitted per user (`skipIf`) or when their target is not on the page (`isAvailable`).
 - `isAvailable(step, { navigated })` tells you when `navigate` was just called for the step's page, so the page on screen may still be the previous one. `speak-friend-react` uses it to avoid taking the old page's element for the new page's target. If you can, make `navigate` resolve once the new page has rendered.
 - `snapshot().waiting` is `true` when the next step has not been shown for 100 ms, because the page is changing or the target has not appeared. The step on screen stays until the next one is ready; when it is the first step, `status` is `running` and `step` is `null` until it is. In React the guide uses it; with your own UI you can show a waiting hint.

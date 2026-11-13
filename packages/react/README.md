@@ -52,22 +52,23 @@ await tours.start("welcome");
 - While the next step takes a moment (100 ms or more), the guide stays on the current step, is marked `aria-busy`, and shows `labels.waiting` in a live region if you gave one. The same goes for the first step: if its target is not on the page yet, a small panel with `labels.waiting` and a Close button appears after 100 ms, Escape closes it, and it gives way to the guide when the step arrives. Without `labels.waiting` nothing is shown until then.
 - The guide keeps clear of the element it points at. Once the page has scrolled to it, a guide that would cover it moves to the other side, then to the top edge; if nothing is clear it stays where you put it. The ring follows the element on every layout change.
 
-## Targets inside web components
+## Targets inside web components and iframes
 
-A step finds its target with `document.querySelector`, which cannot see inside a web component's shadow tree. Name the component with `within` on the step and only that component's open shadow tree is searched:
+A step finds its target with `document.querySelector`, which cannot see inside a web component's shadow tree or an iframe. Name the host with `within` on the step and only that host is searched, through its open shadow tree or, for an iframe, its document:
 
 ```ts
 { id: "play", target: "play", within: "#player", title: "Play", body: "Starts the recording." }
 ```
 
-`within` is a CSS selector for the host element, or a list of them for components inside components (`["#app", "#player"]`: each is looked up inside the one before). It is on purpose never a page-wide search: shadow trees exist so that names cannot clash, and a search across all of them could ring the wrong element without any error. A step without `within` behaves exactly as before.
+`within` is a CSS selector for the host element, or a list of them for hosts inside hosts (`["#app", "#player"]`: each is looked up inside the one before, and the list can mix components and iframes). It is on purpose never a page-wide search: shadow trees exist so that names cannot clash, and a search across all of them could ring the wrong element without any error. A step without `within` behaves exactly as before.
 
 - The host needs no box of its own, so `display: contents` wrappers work. The target must be visible.
 - A closed shadow root cannot be entered. The step is skipped and `onError` is called once with the step id and the selector. A component that has not rendered yet is waited for, up to the step's timeout.
 - Focus given back at the end of a tour goes to the inner element when the tour was started from inside a component, once any step uses `within`.
 - An element that is slotted into a component from the page is in the page, so a step finds it without `within`.
 - `Ring` takes the same `within` prop.
-- Iframes are not supported.
+- An iframe works when its document is from the same origin. The ring and the guide's placement account for the frame's position, border, padding and scaling, also for frames inside frames. A frame from another origin, or one that has not loaded, cannot be read: the step is skipped and `onError` says so. Escape also closes the tour while focus is inside a frame the step looks into, and focus given back at the end goes into the frame when the tour was started from inside it.
+- A tour that runs inside an iframe and points at the page around it is not supported.
 
 ## Reading progress
 

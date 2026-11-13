@@ -1,5 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import { chooseDock, type Dock, type Side } from "./placement.js";
+import { boxOf } from "./box.js";
 import { lookup, useStableWithin, type Within } from "./scope.js";
 
 /** Room kept around the target for its ring, in px. */
@@ -32,7 +33,7 @@ export function useDock(
       if (!found) return;
       const style = getComputedStyle(el);
       const next = chooseDock({
-        target: found.getBoundingClientRect(),
+        target: boxOf(found),
         guide: { width: el.offsetWidth, height: el.offsetHeight },
         viewport: { width: window.innerWidth, height: window.innerHeight },
         gap: parseFloat(style.getPropertyValue("--sf-gap")) || 16,

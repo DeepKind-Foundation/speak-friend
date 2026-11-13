@@ -62,7 +62,7 @@ export function TourProvider<C>({
             else if (r.blocked)
               onError(
                 new Error(
-                  `Step "${step.id}": the element matching ${JSON.stringify(step.within)} has no open shadow root (it is closed, or has not rendered).`,
+                  `Step "${step.id}": the element matching ${JSON.stringify(step.within)} has no open shadow root and no same-origin document (it is closed, cross-origin, or has not loaded).`,
                 ),
               );
             return r.found;

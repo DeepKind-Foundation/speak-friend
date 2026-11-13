@@ -30,6 +30,15 @@ const tours: Tour<null>[] = [
     { id: "hidden", target: "hidden", within: "#card-a", title: "Hidden", body: "Not shown." },
     { id: "save", target: "save", within: "#card-b", title: "Second", body: "Shown." },
   ]),
+  tour("frame", [{ id: "frame", target: "inframe", within: "#frame", title: "In a frame", body: "Same origin." }]),
+  tour("scaled", [{ id: "scaled", target: "inframe", within: "#scaled", title: "Scaled", body: "A scaled frame." }]),
+  tour("nested", [
+    { id: "nested", target: "inframe", within: ["#outer", "#inner"], title: "Nested", body: "A frame in a frame." },
+  ]),
+  tour("hiddenframe", [
+    { id: "hf", target: "inframe", within: "#hiddenframe", title: "Hidden", body: "Not displayed." },
+  ]),
+  tour("foreign", [{ id: "foreign", target: "inframe", within: "#foreign", title: "Foreign", body: "Other origin." }]),
   tour("closed", [{ id: "shut", target: "shut", within: "#closed", title: "Shut", body: "Cannot be reached." }]),
 ];
 

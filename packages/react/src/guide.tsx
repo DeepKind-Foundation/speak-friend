@@ -13,7 +13,8 @@ import { useDock } from "./dock.js";
 import { restoreFocus } from "./focus.js";
 import { Ring } from "./ring.js";
 import { useRun, useScoped, useTourState, useTours } from "./provider.js";
-import { deepActiveElement } from "./scope.js";
+import { boxOf } from "./box.js";
+import { deepActiveElement, lookup } from "./scope.js";
 import { findTarget } from "./wait-for-target.js";
 
 /** Every string the guide shows. The library has no text of its own. */
@@ -189,7 +190,7 @@ export function TourGuide({
     if (!el) return;
     // A target taller than what the guide leaves free cannot be centred, so its top is brought into view instead.
     const free = window.innerHeight - (guideRef.current?.offsetHeight ?? 0) - CLEARANCE;
-    const tall = el.getBoundingClientRect().height > free;
+    const tall = boxOf(el).height > free;
     el.scrollIntoView({ block: tall ? "start" : "center", behavior: reducedMotion() ? "auto" : "smooth" });
   }, [running, state.step]);
 
@@ -199,8 +200,17 @@ export function TourGuide({
       if (e.key === "Escape" && !e.defaultPrevented && !e.isComposing) run(tours.close());
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [active, closeOnEscape, tours, run]);
+    // A key pressed inside an iframe never reaches this document, so the frames the step looks into listen as well.
+    const frames =
+      scoped && state.step
+        ? lookup(state.step.target, state.step.within).roots.filter((root): root is Document => root.nodeType === 9)
+        : [];
+    frames.forEach((doc) => doc.addEventListener("keydown", onKey));
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      frames.forEach((doc) => doc.removeEventListener("keydown", onKey));
+    };
+  }, [active, closeOnEscape, tours, run, scoped, state.step]);
 
   if (!mounted) return null;
   const host = container?.() ?? document.body;

@@ -24,7 +24,11 @@ jobs:
         with:
           node-version: "22"
           cache: pnpm
-      - run: pnpm install --frozen-lockfile
+      # The screen reader tests and their dependencies are left out of the job that builds the public site.
+      - run: pnpm install --frozen-lockfile --filter '!speak-friend-screen-reader*'
+      # A filter that matches nothing is silently ignored, so a renamed package would be installed here without a word.
+      - name: Fail if the screen reader dependencies were installed
+        run: test ! -e apps/screen-reader/node_modules && test ! -e apps/voiceover/node_modules
       - run: pnpm --filter speak-friend-demo... build
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:

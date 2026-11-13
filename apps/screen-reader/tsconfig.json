@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "noEmit": true,
+    "paths": {
+      "speak-friend": ["../../packages/core/src/index.ts"],
+      "speak-friend-react": ["../../packages/react/src/index.ts"]
+    }
+  },
+  "include": ["test", "vitest.config.ts"]
+}

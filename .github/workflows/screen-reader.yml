@@ -1,0 +1,35 @@
+name: Screen reader
+
+# The simulated screen reader lives here and not in ci.yml, so its dependencies stay out of the workflows that build,
+# deploy and publish. No job here may use secrets or an environment. Real screen readers change system permissions and
+# have their own workflow (voiceover.yml), which is never run for pull requests.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: screen-reader-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # A simulated screen reader reads the guide in jsdom. It is not a real one: no machine setup, no network after install.
+  virtual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      # Only this workspace and the packages it tests: the real screen reader packages are not installed here.
+      - run: pnpm install --frozen-lockfile --filter 'speak-friend-screen-reader...'
+      - name: Fail if the VoiceOver dependencies were installed
+        run: test ! -e apps/voiceover/node_modules
+      - run: pnpm --filter speak-friend-screen-reader screen-reader:types
+      - run: pnpm --filter speak-friend-screen-reader screen-reader

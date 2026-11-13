@@ -1,0 +1,66 @@
+name: VoiceOver
+
+# Runs the real VoiceOver on a GitHub-hosted macOS runner and records what it says. Guidepup's setup changes system
+# permissions (it writes to the macOS privacy database through sudo), so this workflow:
+#   - runs only when started by hand or on the nightly schedule, never for a pull request, so code from a branch or a
+#     fork cannot reach the machine setup. Scheduled runs use the default branch.
+#   - is for hosted runners only. A self-hosted runner must never be added to it.
+#   - has a read-only token, no secrets and no environment, and the checkout does not keep the token.
+#   - installs from the lockfile with install scripts off, with only the demo and this workspace, and shares no package
+#     cache with the workflows that build or publish.
+#   - is report-only: nothing requires it to pass, and the wording VoiceOver uses can change between macOS versions.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: voiceover
+  cancel-in-progress: false
+
+jobs:
+  voiceover:
+    # Only the default branch of this repository, so a run started from another branch or from a fork never reaches the
+    # machine setup, even when the workflow file on that branch has been changed.
+    if: github.repository == 'DeepKind-Foundation/speak-friend' && github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - run: pnpm install --frozen-lockfile --ignore-scripts --filter 'speak-friend-demo...' --filter speak-friend-screen-reader-voiceover
+      - name: Fail if the simulated screen reader dependencies were installed
+        run: test ! -e apps/screen-reader/node_modules
+      - run: pnpm --filter speak-friend-screen-reader-voiceover voiceover:types
+      - run: pnpm --filter 'speak-friend-demo...' build
+      - run: pnpm --filter speak-friend-screen-reader-voiceover exec playwright install webkit
+      # Both commands come from @guidepup/setup in the lockfile, and install checks what it downloads against the
+      # sha256 values in the manifest of the pinned @guidepup/guidepup.
+      - name: Set up VoiceOver
+        run: pnpm --filter speak-friend-screen-reader-voiceover exec guidepup setup --ci
+      - run: pnpm --filter speak-friend-screen-reader-voiceover exec guidepup install voiceover
+      - name: Run the tour with VoiceOver
+        run: pnpm --filter speak-friend-screen-reader-voiceover voiceover
+      - name: Show what VoiceOver said
+        if: always()
+        run: |
+          for file in apps/voiceover/output/results/*/spoken.txt; do
+            [ -e "$file" ] || continue
+            { echo "### $(basename "$(dirname "$file")")"; echo '``````text'; head -c 20000 "$file"; echo '``````'; } >> "$GITHUB_STEP_SUMMARY"
+          done
+      - name: Keep the transcripts and test output
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: voiceover-transcripts
+          path: apps/voiceover/output
+          if-no-files-found: warn
+          retention-days: 14

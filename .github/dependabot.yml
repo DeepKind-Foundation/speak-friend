@@ -8,3 +8,6 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # A release is not proposed until it has been public for a week, so a hijacked one is more likely to be pulled first.
+    cooldown:
+      default-days: 7

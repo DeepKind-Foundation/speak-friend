@@ -23,7 +23,11 @@ jobs:
           node-version: "24"
           cache: pnpm
           registry-url: https://registry.npmjs.org
-      - run: pnpm install --frozen-lockfile
+      # The screen reader tests and their dependencies are left out: this job holds the publish credentials.
+      - run: pnpm install --frozen-lockfile --filter '!speak-friend-screen-reader'
+      # A filter that matches nothing is silently ignored, so a renamed package would be installed here without a word.
+      - name: Fail if the screen reader dependencies were installed
+        run: test ! -e apps/screen-reader/node_modules
       - run: node scripts/release-check.mjs "$GITHUB_REF_NAME"
       - run: pnpm format:check
       - run: pnpm lint

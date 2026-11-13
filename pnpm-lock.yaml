@@ -94,6 +94,30 @@ importers:
         specifier: 8.3.8
         version: 8.3.8(@types/node@22.19.1)(esbuild@0.28.2)
 
+  apps/screen-reader:
+    devDependencies:
+      '@guidepup/virtual-screen-reader':
+        specifier: 0.33.0
+        version: 0.33.0
+      '@testing-library/react':
+        specifier: 16.3.0
+        version: 16.3.0(@testing-library/dom@10.4.2)(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@types/react':
+        specifier: 19.1.8
+        version: 19.1.8
+      '@types/react-dom':
+        specifier: 19.1.6
+        version: 19.1.6(@types/react@19.1.8)
+      jsdom:
+        specifier: 26.1.0
+        version: 26.1.0
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      react-dom:
+        specifier: 19.1.0
+        version: 19.1.0(react@19.1.0)
+
   packages/core: {}
 
   packages/react:
@@ -461,6 +485,10 @@ packages:
   '@fontsource/source-serif-4@5.3.1':
     resolution: {integrity: sha512-cWcTCXjYYrgF9A67fThVir1VSc0lPEYmwQ6jA4pPt01s2MSCi/maINUcZoCzaqnU8fyUReDO97eGcBUkHgOeug==}
 
+  '@guidepup/virtual-screen-reader@0.33.0':
+    resolution: {integrity: sha512-CXMkIx19oFZ7BS7TcvDibXn6A2RsEs8nVX9IijHW7HQ0qTGHgc2WErkaMi12YPQi1Zypxr36NfRYWgBxUNvMtQ==}
+    engines: {node: '>=20'}
+
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
     engines: {node: '>=18.18.0'}
@@ -798,6 +826,12 @@ packages:
         optional: true
       '@types/react-dom':
         optional: true
+
+  '@testing-library/user-event@14.6.10':
+    resolution: {integrity: sha512-tA4stGNp3mLGOGO+lh87UA56Tz4c8NVGBSkyIF58O+W/bs2Re9BCI9xihnL70+DsThncFznE0skS88SM1D2hyg==}
+    engines: {node: '>=12', npm: '>=6'}
+    peerDependencies:
+      '@testing-library/dom': '>=7.21.4'
 
   '@tybys/wasm-util@0.10.4':
     resolution: {integrity: sha512-W3c4gRigFS0T/Ma4qIYF3GDAc5AQdHb1yL5znJT1Zv1YaD9Kitx656wBjvr19qbiosmZT8lWDM5BEMynUqX65A==}
@@ -1179,6 +1213,9 @@ packages:
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
 
+  dom-accessibility-api@0.7.1:
+    resolution: {integrity: sha512-vdnCeZD+3wZ+8h8xXL/ZtBlvvoobOFyPzSiIfO6sGOZDqjFx4aLMAjZhl4rawj5xYz3UwP6Tgvyh0iH4IOCVnQ==}
+
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
@@ -1445,6 +1482,9 @@ packages:
 
   hookified@2.2.0:
     resolution: {integrity: sha512-p/LgFzRN5FeoD3DLS6bkUapeye6E4SI6yJs6KetENd18S+FBthqYq2amJUWpt5z0EQwwHemidjY5OqJGEKm5uA==}
+
+  html-aria@0.5.3:
+    resolution: {integrity: sha512-2SkCacsjXJu0e6D5vLSHlLs7KEdPZ7pIJqLh9EFedPqrAaywthe7jJWQ+PjEyB7bpmWMMOsBJuV4WlYd9WRiug==}
 
   html-encoding-sniffer@4.0.0:
     resolution: {integrity: sha512-Y22oTqIU4uuPgEemfz7NDJz6OeKf12Lsu+QC+s3BVpda64lTiMYCyGwg5ki4vFxkMwQdeZDl2adZoqUgdFuTgQ==}
@@ -2726,6 +2766,13 @@ snapshots:
 
   '@fontsource/source-serif-4@5.3.1': {}
 
+  '@guidepup/virtual-screen-reader@0.33.0':
+    dependencies:
+      '@testing-library/dom': 10.4.2
+      '@testing-library/user-event': 14.6.10(@testing-library/dom@10.4.2)
+      dom-accessibility-api: 0.7.1
+      html-aria: 0.5.3
+
   '@humanfs/core@0.19.2':
     dependencies:
       '@humanfs/types': 0.15.0
@@ -2948,6 +2995,10 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.8
       '@types/react-dom': 19.1.6(@types/react@19.1.8)
+
+  '@testing-library/user-event@14.6.10(@testing-library/dom@10.4.2)':
+    dependencies:
+      '@testing-library/dom': 10.4.2
 
   '@tybys/wasm-util@0.10.4':
     dependencies:
@@ -3379,6 +3430,8 @@ snapshots:
 
   dom-accessibility-api@0.5.16: {}
 
+  dom-accessibility-api@0.7.1: {}
+
   dunder-proto@1.0.1:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -3762,6 +3815,8 @@ snapshots:
   hookified@1.15.1: {}
 
   hookified@2.2.0: {}
+
+  html-aria@0.5.3: {}
 
   html-encoding-sniffer@4.0.0:
     dependencies:

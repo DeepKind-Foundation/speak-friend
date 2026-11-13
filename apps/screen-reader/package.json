@@ -1,0 +1,21 @@
+{
+  "name": "speak-friend-screen-reader",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Screen reader tests for the guide. Kept apart so no release or deploy job installs its dependencies.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "screen-reader": "vitest run",
+    "screen-reader:types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@guidepup/virtual-screen-reader": "0.33.0",
+    "@testing-library/react": "16.3.0",
+    "@types/react": "19.1.8",
+    "@types/react-dom": "19.1.6",
+    "jsdom": "26.1.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  }
+}

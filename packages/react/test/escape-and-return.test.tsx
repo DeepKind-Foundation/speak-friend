@@ -165,6 +165,12 @@ describe("the back to the tour button", () => {
     expect(document.querySelector(".sf-return")).toBeNull();
   });
 
+  it("sits in a wrapper that takes no part in layout, so a grid container gives it no cell", async () => {
+    await start();
+    const wrapper = document.querySelector(".sf-return")?.parentElement;
+    expect(wrapper?.style.display).toBe("contents");
+  });
+
   it("is put first inside the container the guide was given, not before the page", async () => {
     const modal = document.createElement("div");
     const lead = document.createElement("button");

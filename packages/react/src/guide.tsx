@@ -223,9 +223,14 @@ export function TourGuide({
 
   // A button before everything else in the page that brings focus back to the guide. The guide itself is last in the
   // page, so without it someone who tabs away has to go through the rest of the page to return.
-  const [returnHost] = useState<HTMLDivElement | null>(() =>
-    typeof document === "undefined" ? null : document.createElement("div"),
-  );
+  // The wrapper takes no part in layout, so a container that is a grid or flex box does not give it a cell. It is an
+  // inline style on purpose: it must hold without styles.css.
+  const [returnHost] = useState<HTMLDivElement | null>(() => {
+    if (typeof document === "undefined") return null;
+    const el = document.createElement("div");
+    el.style.display = "contents";
+    return el;
+  });
   const containerRef = useRef(container);
   useLayoutEffect(() => {
     containerRef.current = container;

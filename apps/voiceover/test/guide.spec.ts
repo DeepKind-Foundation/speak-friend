@@ -1,46 +1,15 @@
-import { voiceOverTest as test, type VoiceOverPlaywright } from "@guidepup/playwright";
-import { expect, type Page, type TestInfo } from "@playwright/test";
-import { writeFileSync } from "node:fs";
+import { voiceOverTest as test } from "@guidepup/playwright";
+import { expect } from "@playwright/test";
+import { closeTour, openDemo, saveTranscript, startTour } from "./helpers";
 
-// What VoiceOver says is written to a transcript for every test, pass or fail, so it can be read by a person.
-//
-// Guidepup only records speech that follows one of its own commands. Speech caused by the page (focus moving to the
-// guide, a status message) is recorded by wrapping the page action in voiceOver.capture, which waits for VoiceOver to
-// finish speaking. The checks are deliberately loose: they look for the words the guide puts on the page, not for how
-// VoiceOver phrases its roles, which differs between macOS versions.
-
-const saveTranscript = async (voiceOver: VoiceOverPlaywright, testInfo: TestInfo): Promise<void> => {
-  const file = testInfo.outputPath("spoken.txt");
-  writeFileSync(file, `${(await voiceOver.spokenPhraseLog()).join("\n")}\n`);
-  await testInfo.attach("spoken", { path: file, contentType: "text/plain" });
-};
-
-/** Opens the demo and puts VoiceOver in the page. */
-const openDemo = async (page: Page, voiceOver: VoiceOverPlaywright): Promise<void> => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Take the tour" }).waitFor();
-  await voiceOver.navigateToWebContent();
-  await voiceOver.clearSpokenPhraseLog();
-};
-
-/** Starts the tour from the keyboard, as a person would, and returns what VoiceOver said while it opened. */
-const startTour = async (page: Page, voiceOver: VoiceOverPlaywright): Promise<string> => {
-  const begin = page.getByRole("button", { name: "Take the tour" });
-  const { spokenPhrase } = await voiceOver.capture(
-    async () => {
-      await begin.focus();
-      await page.keyboard.press("Enter");
-      await expect(page.getByRole("dialog")).toBeVisible();
-    },
-    { capture: true },
-  );
-  return spokenPhrase;
-};
+// The checks are deliberately loose: they look for the words the guide puts on the page, not for how VoiceOver
+// phrases its roles, which differs between macOS versions.
 
 test("says the step and its count when the tour starts", async ({ page, voiceOver }, testInfo) => {
   await openDemo(page, voiceOver);
   try {
-    expect(await startTour(page, voiceOver)).toMatch(/Step 1 of \d+/);
+    // The counter is drawn in capitals, and VoiceOver reads it as it is drawn.
+    expect(await startTour(page, voiceOver)).toMatch(/step 1 of \d+/i);
   } finally {
     await saveTranscript(voiceOver, testInfo);
   }
@@ -71,14 +40,7 @@ test("says that the tour closed when Escape is pressed in the guide", async ({ p
   await openDemo(page, voiceOver);
   try {
     await startTour(page, voiceOver);
-    const { spokenPhrase } = await voiceOver.capture(
-      async () => {
-        await page.keyboard.press("Escape");
-        await expect(page.getByRole("dialog")).toBeHidden();
-      },
-      { capture: true },
-    );
-    expect(spokenPhrase).toMatch(/Tour closed/);
+    expect(await closeTour(page, voiceOver)).toMatch(/Tour closed/);
   } finally {
     await saveTranscript(voiceOver, testInfo);
   }

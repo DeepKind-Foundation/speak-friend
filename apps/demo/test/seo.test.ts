@@ -69,6 +69,19 @@ describe("across pages", () => {
     });
   });
 
+  it("names the site on the front page, so search engines know what the pages belong to", () => {
+    expect(jsonLd(headTags("guide"))).toContainEqual({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Speak, Friend",
+      url: pageUrl("guide"),
+    });
+  });
+
+  it("keeps descriptions short enough to be shown whole in search results", () => {
+    for (const id of ids) expect(PAGES[id].description.length).toBeLessThanOrEqual(150);
+  });
+
   it("gives the workbench a breadcrumb back to the front page", () => {
     const text = JSON.stringify(jsonLd(headTags("workbench")));
     expect(text).toContain("BreadcrumbList");
@@ -85,8 +98,14 @@ describe("files for crawlers and agents", () => {
   });
 
   it("lists every page once in the sitemap", () => {
-    const sitemap = sitemapXml();
+    const sitemap = sitemapXml("2026-11-15");
     for (const id of ids) expect(sitemap.split(`<loc>${pageUrl(id)}</loc>`)).toHaveLength(2);
+  });
+
+  it("dates every page in the sitemap, and rejects a date that is not a day", () => {
+    const sitemap = sitemapXml("2026-11-15");
+    expect(sitemap.match(/<lastmod>2026-11-15<\/lastmod>/g)).toHaveLength(ids.length);
+    expect(() => sitemapXml("yesterday")).toThrow();
   });
 
   it("builds llms.txt with the install command, an example and the pages", () => {

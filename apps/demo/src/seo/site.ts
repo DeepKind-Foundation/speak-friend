@@ -21,7 +21,7 @@ export const PAGES = {
     path: "/",
     title: "Speak, Friend: accessible product tours for React",
     description:
-      "A small React library for accessible product tours and onboarding walkthroughs. Keyboard first, screen reader friendly, and it dims the page only if you ask.",
+      "A small React library for accessible product tours and walkthroughs. Keyboard first, screen reader friendly, and it dims the page only if you ask.",
   },
   docs: {
     path: "/docs/",

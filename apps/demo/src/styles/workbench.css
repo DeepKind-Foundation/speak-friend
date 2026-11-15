@@ -204,7 +204,7 @@
 .tabs button {
   display: inline-flex;
   align-items: center;
-  min-block-size: 24px;
+  min-block-size: 32px;
   padding: 0 var(--space-2);
   border: 1px solid var(--rule);
   border-radius: 4px;

@@ -23,6 +23,7 @@ function structuredData(id: PageId): object[] {
         keywords: "react, product tour, onboarding, walkthrough, accessibility, a11y, wcag, screen reader",
         sameAs: [NPM.engine, NPM.react, REPO],
       },
+      { "@context": context, "@type": "WebSite", name: "Speak, Friend", url: pageUrl(id) },
     ];
   }
   const docs = id === "docs";

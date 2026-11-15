@@ -11,7 +11,7 @@ export interface DocSection {
 export const sections: readonly DocSection[] = [
   {
     id: "web-components",
-    question: "How do I point a step at an element inside a web component or an iframe?",
+    question: "How do I point a step inside a web component or an iframe?",
     paragraphs: [
       "A step finds its target with document.querySelector, which cannot see inside a web component's shadow tree or an iframe. Name the host element with within on the step, and only that host is searched.",
       "within is a CSS selector for the host, or a list of selectors for hosts inside hosts. Each one is looked up inside the one before, and the list can mix components and iframes. It is never a search across the whole page, on purpose: shadow trees exist so that names cannot clash, and a page-wide search could ring the wrong element without any error.",

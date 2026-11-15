@@ -1,5 +1,6 @@
 // Writes the real content of each page into its html, plus robots.txt, sitemap.xml and llms.txt, after the client and server builds.
 // Run by `pnpm build`. Fails if a page comes out without its heading, so an empty shell is never published.
+import { execFileSync } from "node:child_process";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -30,5 +31,7 @@ await inject("docs/index.html", renderDocs());
 await inject("workbench/index.html", renderWorkbench());
 await writeFile(resolve(dist, "llms.txt"), llmsTxt());
 await writeFile(resolve(dist, "robots.txt"), robotsTxt());
-await writeFile(resolve(dist, "sitemap.xml"), sitemapXml());
+// The pages are dated by the commit they were built from, so a rebuild of the same commit gives the same sitemap.
+const lastmod = execFileSync("git", ["log", "-1", "--format=%cs"], { cwd: app, encoding: "utf8" }).trim();
+await writeFile(resolve(dist, "sitemap.xml"), sitemapXml(lastmod));
 await rm(ssr, { recursive: true, force: true });

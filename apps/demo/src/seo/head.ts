@@ -20,7 +20,8 @@ function structuredData(id: PageId): object[] {
         programmingLanguage: "TypeScript",
         runtimePlatform: "React 18 and later",
         license: "https://opensource.org/license/mit",
-        keywords: "react, product tour, onboarding, walkthrough, accessibility, a11y, wcag, screen reader",
+        keywords:
+          "react, javascript, typescript, product tour, onboarding, walkthrough, accessibility, a11y, wcag, screen reader, shadow dom, web components, iframe, open source",
         sameAs: [NPM.engine, NPM.react, REPO],
       },
       { "@context": context, "@type": "WebSite", name: "Speak, Friend", url: pageUrl(id) },

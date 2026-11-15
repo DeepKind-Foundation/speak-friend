@@ -40,7 +40,7 @@ export function WorkbenchPage(): JSX.Element {
     <TourProvider tours={workbenchTours} store={store} context={null}>
       <main className="page">
         <Header current="workbench" />
-        <h1 className="bench-title">Try the guide, then copy the code</h1>
+        <h1 className="bench-title">Try the React tour guide, then copy the code</h1>
         <div className="stage-wrap">
           <Stage options={options} frame={frame} />
         </div>

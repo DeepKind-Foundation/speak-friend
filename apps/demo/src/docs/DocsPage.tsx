@@ -9,10 +9,10 @@ export function DocsPage(): JSX.Element {
   return (
     <main className="page">
       <Header current="docs" />
-      <h1 className="docs-title">Documentation</h1>
+      <h1 className="docs-title">React product tour documentation</h1>
       <p className="docs-lead">
-        The details behind the quick start: targets in web components and iframes, saving progress, the keyboard, and
-        what is not covered. The package READMEs hold the same reference.
+        The details behind the quick start: targets in shadow DOM, web components and iframes, saving progress, the
+        keyboard, and what is not covered. The package READMEs hold the same reference.
       </p>
       <nav className="docs-contents" aria-label="On this page">
         <ul className="links">

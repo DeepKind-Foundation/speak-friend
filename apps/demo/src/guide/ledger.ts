@@ -44,4 +44,13 @@ export const ledger: readonly LedgerEntry[] = [
     stepBody:
       "The guide only animates when the system allows it. No step advances by itself, so you can read at your own pace.",
   },
+  {
+    id: "frames",
+    term: "Shadow DOM and iframes",
+    description:
+      "Yes, iframes. It's 2026 and someone's dashboard still lives in one. We'll point at it anyway. Same-origin frames and open shadow roots only.",
+    stepTitle: "Steps can point into frames and components",
+    stepBody:
+      "Name the host element with within and the step is found inside it, in an open shadow root or a same-origin iframe. A closed root or a frame from another origin is skipped and reported through onError.",
+  },
 ];

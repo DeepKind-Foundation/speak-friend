@@ -5,7 +5,7 @@ import { NPM, REPO, pageUrl } from "./site";
 export function llmsTxt(): string {
   return `# Speak, Friend
 
-> Speak, Friend is a small React library for accessible product tours and onboarding walkthroughs. A headless engine (speak-friend) and a docked guide for React 18 and later (speak-friend-react). Keyboard first, screen reader friendly, and it leaves the page usable, dimming it only if you ask. MIT licence, alpha.
+> Speak, Friend is an open source JavaScript library, written in TypeScript, for accessible product tours and onboarding walkthroughs in React. A headless engine (speak-friend) and a docked guide for React 18 and later (speak-friend-react). Keyboard first, screen reader friendly, and it leaves the page usable, dimming it only if you ask. Steps can point inside open shadow roots and same-origin iframes. MIT licence, alpha.
 
 ## Install
 
@@ -29,7 +29,7 @@ ${quickStart.code}
 ## Links
 
 - [Guide and quick start](${pageUrl("guide")}): what it does, the example above and the props of the guide
-- [Documentation](${pageUrl("docs")}): targets in web components and iframes, saving and resuming progress, the keyboard, and what is not covered
+- [Documentation](${pageUrl("docs")}): targets in shadow DOM, web components and iframes, saving and resuming progress, the keyboard, and what is not covered
 - [Workbench](${pageUrl("workbench")}): try every option in a sample app and copy the complete code for your choices
 - [speak-friend on npm](${NPM.engine}): the engine
 - [speak-friend-react on npm](${NPM.react}): the guide for React

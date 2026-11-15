@@ -1,6 +1,6 @@
 /** The quick start shown on the front page and offered to agents in llms.txt. */
 export const quickStart = {
-  question: "How do I add a page tour to a React app?",
+  question: "How do I add a product tour to a React app?",
   answer:
     "Install speak-friend and speak-friend-react, describe your tour as chapters and steps, mark each target with a data-tour attribute, and render a TourGuide inside a TourProvider. The guide docks to the window, moves focus to each step title and leaves the page usable. It does not dim it unless you ask. Progress is saved wherever you keep it, in memory, in local storage or in your database.",
   install: "pnpm add speak-friend speak-friend-react",

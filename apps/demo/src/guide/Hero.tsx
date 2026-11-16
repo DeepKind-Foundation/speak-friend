@@ -15,10 +15,11 @@ export function Hero(): JSX.Element {
     <div className="hero">
       <div className="hero-copy">
         <p className="eyebrow">speak-friend-react</p>
-        <h1>Page tours that leave the page usable.</h1>
+        <h1>An accessible product tour library for React</h1>
         <p>
-          A small engine and a docked guide for React. It speaks to screen readers, obeys the keyboard and keeps the
-          page you are pointing at usable.
+          Page tours that leave the page usable. A JavaScript library for onboarding walkthroughs: a small headless
+          engine and a docked guide for React, written in TypeScript and MIT licensed. It speaks to screen readers,
+          obeys the keyboard, keeps the page you are pointing at usable, and reaches into shadow DOM and iframes.
         </p>
         <div className="hero-actions">
           <button type="button" className="button" onClick={start}>

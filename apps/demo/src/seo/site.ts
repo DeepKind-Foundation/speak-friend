@@ -19,19 +19,19 @@ export interface PageMeta {
 export const PAGES = {
   guide: {
     path: "/",
-    title: "Speak, Friend: accessible product tours for React",
+    title: "Speak, Friend: accessible product tour library for React",
     description:
-      "A small React library for accessible product tours and walkthroughs. Keyboard first, screen reader friendly, and it dims the page only if you ask.",
+      "Open source React product tour library for onboarding walkthroughs. Keyboard first, screen reader friendly, and it works in shadow DOM and iframes.",
   },
   docs: {
     path: "/docs/",
-    title: "Documentation for the React tour guide | Speak, Friend",
+    title: "Product tour docs: shadow DOM, iframes | Speak, Friend",
     description:
-      "How to point a tour step into a web component or an iframe, save and resume progress, use the keyboard, and what the guide does not cover yet.",
+      "How to point a tour step into a shadow DOM, web component or iframe, save and resume progress, use the keyboard, and what is not covered yet.",
   },
   workbench: {
     path: "/workbench/",
-    title: "React tour guide workbench | Speak, Friend",
+    title: "React product tour playground | Speak, Friend",
     description:
       "Try the tour guide in a sample app: dock side, theme, dimming, colours and a right-to-left page. Copy the complete code for your choices.",
   },

@@ -20,8 +20,11 @@ export function GuidePage(): JSX.Element {
         <Header current="guide" />
         <Hero />
         <section className="doc" aria-labelledby="accessible">
-          <h2 id="accessible">What makes it accessible?</h2>
-          <p>Built to WCAG 2.2 AA. Each row below is also a step of the tour.</p>
+          <h2 id="accessible">What makes it accessible, and where can it point?</h2>
+          <p>
+            Built to WCAG 2.2 AA, and able to point inside shadow DOM and iframes. Each row below is also a step of the
+            tour.
+          </p>
         </section>
         <LedgerList entries={ledger} />
         <QuickStart />

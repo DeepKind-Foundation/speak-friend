@@ -52,7 +52,7 @@ describe("GuidePage", () => {
     await takeTheTour();
     const dialog = screen.getByRole("dialog");
     expect(dialog.textContent).toContain(ledger[0]?.stepTitle);
-    expect(dialog.textContent).toContain("Step 1 of 4");
+    expect(dialog.textContent).toContain(`Step 1 of ${ledger.length}`);
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Next" }));
     });

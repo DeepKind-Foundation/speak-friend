@@ -19,7 +19,7 @@ export function QuickStart(): JSX.Element {
         <CodePanel title="Example" lines={exampleLines} />
       </section>
       <section className="doc" aria-labelledby="props">
-        <h2 id="props">Which props does the guide take?</h2>
+        <h2 id="props">Which props does the TourGuide component take?</h2>
         <table aria-label="Props of TourGuide">
           <thead>
             <tr>
@@ -40,17 +40,17 @@ export function QuickStart(): JSX.Element {
         </table>
       </section>
       <section className="doc" aria-labelledby="status">
-        <h2 id="status">What do I need, and where is it?</h2>
+        <h2 id="status">Is it open source, and what does it need?</h2>
         <p>
-          React 18 or later, and a bundler that handles ES modules. Both packages are MIT licensed and in alpha, so the
-          API can still change. The <a href="./workbench/">workbench</a> lets you try every option and see the code it
-          produces. The <a href="./docs/">documentation</a> covers targets inside web components and iframes, saving
-          progress and the keyboard.
+          React 18 or later, and a bundler that handles ES modules. Both npm packages are open source under the MIT
+          licence and in alpha, so the API can still change. The <a href="./workbench/">workbench</a> lets you try every
+          option and see the code it produces. The <a href="./docs/">documentation</a> covers targets inside web
+          components and iframes, saving progress and the keyboard.
         </p>
         <ul className="links">
           <li>
-            <a href={NPM.engine}>speak-friend on npm</a> is the engine. It has no DOM or React dependency and runs on
-            the server.
+            <a href={NPM.engine}>speak-friend on npm</a> is the headless engine, plain TypeScript with no DOM or React
+            dependency, which also runs on the server.
           </li>
           <li>
             <a href={NPM.react}>speak-friend-react on npm</a> is the guide for React.

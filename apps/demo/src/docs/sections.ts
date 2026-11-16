@@ -10,8 +10,16 @@ export interface DocSection {
 /** The documentation page, in reading order. Everything here is also in the package README. */
 export const sections: readonly DocSection[] = [
   {
+    id: "what",
+    question: "What is Speak, Friend?",
+    paragraphs: [
+      "Speak, Friend is an open source JavaScript library, written in TypeScript, for accessible product tours and onboarding walkthroughs. It comes as two npm packages and is MIT licensed.",
+      "speak-friend is the headless engine: tours, chapters, steps and progress, with no DOM or React dependency. speak-friend-react is the guide for React 18 and later, a docked, keyboard first dialog that never dims the page unless you ask.",
+    ],
+  },
+  {
     id: "web-components",
-    question: "How do I point a step inside a web component or an iframe?",
+    question: "Can a tour step point inside a shadow DOM, a web component or an iframe?",
     paragraphs: [
       "A step finds its target with document.querySelector, which cannot see inside a web component's shadow tree or an iframe. Name the host element with within on the step, and only that host is searched.",
       "within is a CSS selector for the host, or a list of selectors for hosts inside hosts. Each one is looked up inside the one before, and the list can mix components and iframes. It is never a search across the whole page, on purpose: shadow trees exist so that names cannot clash, and a page-wide search could ring the wrong element without any error.",

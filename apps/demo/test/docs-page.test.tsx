@@ -20,6 +20,12 @@ describe("DocsPage", () => {
     for (const section of sections) expect(section.paragraphs.length).toBeGreaterThan(0);
   });
 
+  it("says what the library is, in the words people search for", () => {
+    for (const phrase of ["open source JavaScript library", "TypeScript", "headless", "shadow DOM", "iframe"]) {
+      expect(html, phrase).toContain(phrase);
+    }
+  });
+
   it("covers scoped targets, saved progress, the keyboard and the limits", () => {
     for (const word of ["within", "webStorageStore", "closeOnEscape", "returnToGuide", "closed shadow root"]) {
       expect(html).toContain(word);

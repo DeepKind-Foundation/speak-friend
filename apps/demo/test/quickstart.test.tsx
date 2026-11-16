@@ -25,7 +25,7 @@ describe("GuidePage content", () => {
   it("has one h1, the question as an h2, a props table and links to the packages", () => {
     render(<GuidePage />);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByRole("heading", { level: 2, name: "How do I add a page tour to a React app?" })).toBeTruthy();
+    expect(screen.getByRole("heading", { level: 2, name: quickStart.question })).toBeTruthy();
     const table = screen.getByRole("table", { name: "Props of TourGuide" });
     for (const prop of ["labels", "position", "theme", "announce", "headingLevel", "closeOnEscape"]) {
       expect(within(table).getByText(prop)).toBeTruthy();
@@ -41,10 +41,14 @@ describe("server rendering", () => {
   it("puts the real content of both pages into the html", () => {
     const guide = renderToString(<GuidePage />);
     expect(guide).toContain("Page tours that leave the page usable.");
+    for (const phrase of ["product tour library", "JavaScript", "TypeScript", "onboarding", "headless", "shadow DOM"]) {
+      expect(guide, phrase).toContain(phrase);
+    }
+    expect(guide).toContain("open shadow roots");
     expect(guide).toContain("pnpm");
     expect(guide).not.toContain('role="dialog"');
     const workbench = renderToString(<WorkbenchPage />);
-    expect(workbench).toContain("Try the guide, then copy the code");
+    expect(workbench).toContain("Try the React tour guide, then copy the code");
     expect(workbench).toContain("TourGuide");
   });
 });

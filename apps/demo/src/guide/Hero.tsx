@@ -19,7 +19,8 @@ export function Hero(): JSX.Element {
         <p>
           Page tours that leave the page usable. A JavaScript library for onboarding walkthroughs: a small headless
           engine and a docked guide for React, written in TypeScript and MIT licensed. It speaks to screen readers,
-          obeys the keyboard, keeps the page you are pointing at usable, and reaches into shadow DOM and iframes.
+          obeys the keyboard, keeps the page you are pointing at usable, remembers where people left off, and can point
+          inside shadow DOM and iframes.
         </p>
         <div className="hero-actions">
           <button type="button" className="button" onClick={start}>

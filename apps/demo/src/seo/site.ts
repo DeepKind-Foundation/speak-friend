@@ -21,13 +21,13 @@ export const PAGES = {
     path: "/",
     title: "Speak, Friend: accessible product tour library for React",
     description:
-      "Open source React product tour library for onboarding walkthroughs. Keyboard first, screen reader friendly, and it works in shadow DOM and iframes.",
+      "Open source React product tour library. Keyboard first, screen reader friendly, resumable, and it can point into shadow DOM and iframes.",
   },
   docs: {
     path: "/docs/",
-    title: "Product tour docs: shadow DOM, iframes | Speak, Friend",
+    title: "React product tour docs | Speak, Friend",
     description:
-      "How to point a tour step into a shadow DOM, web component or iframe, save and resume progress, use the keyboard, and what is not covered yet.",
+      "How to point tour steps at targets, even in shadow DOM or iframes, save and resume progress, use the keyboard, and what is not covered yet.",
   },
   workbench: {
     path: "/workbench/",

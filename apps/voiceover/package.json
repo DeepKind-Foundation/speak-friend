@@ -13,7 +13,7 @@
     "@guidepup/guidepup": "0.40.0",
     "@guidepup/playwright": "0.21.0",
     "@guidepup/setup": "0.29.3",
-    "@playwright/test": "1.65.0",
+    "@playwright/test": "1.65.1",
     "@types/node": "22.19.1"
   }
 }
